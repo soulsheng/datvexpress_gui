@@ -1,6 +1,7 @@
 #ifndef DVB_TYPES_H
 #define DVB_TYPES_H
 
+#include "inttypes.h"
 
 typedef struct{
     short re;

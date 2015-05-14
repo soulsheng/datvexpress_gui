@@ -8,6 +8,10 @@
 #include "DVB-T/dvb_t.h"
 #include "DVB-S2/DVBS2.h"
 
+#include "inttypes.h"
+typedef unsigned short  u_int16_t;
+typedef unsigned int	u_int32_t;
+
 typedef struct{
     int  event_duration;
     char event_title[2048];

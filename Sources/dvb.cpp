@@ -6,13 +6,13 @@
 #include <fcntl.h>
 #include <memory.h>
 #include <sys/types.h>
-#include <syscall.h>
+//#include <syscall.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <memory.h>
-#include <syscall.h>
+#include <windows.h>
 #include <time.h>
 
 #include "dvb_gen.h"

@@ -2,12 +2,12 @@
 // This file contains the UDP handlers
 //
 #include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+//#include <sys/socket.h>
+//#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <netinet/in.h>
+//#include <netinet/in.h>
 #include "dvb.h"
 
 extern int m_dvb_running;

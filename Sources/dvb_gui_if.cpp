@@ -1,7 +1,7 @@
 //
 // The interface between GUI and DVB
 //
-#include <syscall.h>
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
