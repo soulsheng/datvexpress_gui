@@ -46,6 +46,7 @@ public:
         scmplx *pl_get_frame(void);
         scmplx *pl_get_dummy( int &len );
         int s2_add_ts_frame( u8 *ts );
+		int s2_get_n_symbol();
 	DVBS2();
 };
 

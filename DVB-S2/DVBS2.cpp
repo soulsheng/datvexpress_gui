@@ -150,3 +150,24 @@ DVBS2::DVBS2()
     pl_build_dummy();
 }
 
+int DVBS2::s2_get_n_symbol()
+{
+	double p,m,S;
+	// Calculate the number of symbols in the payload
+	p = 0;m = 0;
+	if( m_format[1].frame_type == FRAME_NORMAL )  p = (double)FRAME_SIZE_NORMAL;
+	if( m_format[1].frame_type == FRAME_SHORT  )  p = (double)FRAME_SIZE_SHORT;
+	if( m_format[1].constellation == M_QPSK )     m = 2.0;
+	if( m_format[1].constellation == M_8PSK )     m = 3.0;
+	if( m_format[1].constellation == M_16APSK )   m = 4.0;
+	if( m_format[1].constellation == M_32APSK )   m = 5.0;
+	S= p/m/90;//Number of symbols per frame
+
+	int nSymbol = 90*(S+1);
+	int nPilot = 36 * int((S-1)/16 );
+	if( m_format[1].pilots )
+		nSymbol += nPilot;
+
+	return nSymbol;
+}
+
