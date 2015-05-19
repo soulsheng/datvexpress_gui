@@ -319,7 +319,7 @@ void DVBS2::pl_build_dummy( void )
 
 scmplx * DVBS2::pl_get_frame( void )
 {
-    return m_pl;
+    return m_pl; 
 }
 
 scmplx * DVBS2::pl_get_dummy( int &len )
