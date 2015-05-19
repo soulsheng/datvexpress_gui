@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
-#include "dvb.h"
+//#include "dvb.h"
 #include "DVBS2.h"
 
 
@@ -12,21 +12,21 @@
 //
 void display_poly( int *in, int len )
 {
-        loggerf("\n");
+        printf("\n");
 	for( int i = 0; i < len; i++ )
 	{
 		if(in[i] == 1 )
 		{
 			if( i == 0 )
-                                loggerf("1");
+                                printf("1");
 			else
 				if( i == 1 )
-                                        loggerf("+x");
+                                        printf("+x");
 				else
-                                        loggerf("+x^%d",i);
+                                        printf("+x^%d",i);
 		}
 	}
-        loggerf("\n");
+        printf("\n");
 }
 //
 // length is in bits
@@ -34,29 +34,29 @@ void display_poly( int *in, int len )
 void display_poly_pack( unsigned int *in, int len )
 {
 
-        loggerf("\n");
+        printf("\n");
 	for( int i = 0; i < len/32; i++ )
 	{
-                loggerf("%.8X",in[i]);
+                printf("%.8X",in[i]);
 	}
 	switch((len%32)/8)
 	{
 	case 0:
 		break;
 	case 1:
-                loggerf("%.2X",in[(len/32)]>>24);
+                printf("%.2X",in[(len/32)]>>24);
 		break;
 	case 2:
-                loggerf("%.2X",in[(len/32)]>>24);
-                loggerf("%.2X",in[(len/32)]>>16);
+                printf("%.2X",in[(len/32)]>>24);
+                printf("%.2X",in[(len/32)]>>16);
 		break;
 	case 3:
-                loggerf("%.2X",in[(len/32)]>>24);
-                loggerf("%.2X",in[(len/32)]>>16);
-                loggerf("%.2X",in[(len/32)]>>8);
+                printf("%.2X",in[(len/32)]>>24);
+                printf("%.2X",in[(len/32)]>>16);
+                printf("%.2X",in[(len/32)]>>8);
 		break;
 	}
-        loggerf("\n");
+        printf("\n");
 }
 
 //

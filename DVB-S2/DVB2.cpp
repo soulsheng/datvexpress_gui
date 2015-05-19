@@ -1,6 +1,6 @@
 #include "memory.h"
 #include "DVB2.h"
-#include "dvb.h"
+//#include "dvb.h"
 
 //
 // Update working parameters for the next frame
@@ -109,7 +109,7 @@ int DVB2::set_configure( DVB2FrameFormat *f )
                 f->bch_code = BCH_CODE_N8;
                 break;
             default:
-                loggerf("Configuration error DVB2\n");
+                printf("Configuration error DVB2\n");
                 error = -1;
                 break;
         }
@@ -168,7 +168,7 @@ int DVB2::set_configure( DVB2FrameFormat *f )
                 f->kbch  = 0;
                 break;
             default:
-                loggerf("Configuration error DVB2\n");
+                printf("Configuration error DVB2\n");
                 error = -1;
                 break;
         }
