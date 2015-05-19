@@ -42,6 +42,9 @@
     <Filter Include="dvb-s2">
       <UniqueIdentifier>{0ec6f27a-070b-4851-a772-105a2171f76c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dvb-s">
+      <UniqueIdentifier>{f5c53c4c-eef7-4772-9a2c-5f2389c3d1fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
@@ -233,6 +236,24 @@
     <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp">
       <Filter>dvb-s2</Filter>
     </ClCompile>
+    <ClCompile Include="..\DVB-S\dvb_interleave.cpp">
+      <Filter>dvb-s</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DVB-S\dvb_rs_encoder.cpp">
+      <Filter>dvb-s</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DVB-S\dvbs_modulator.cpp">
+      <Filter>dvb-s</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DVB-S\dvbs_receive.cpp">
+      <Filter>dvb-s</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\dvb_capture.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\dvb_capture_ctl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\mainwindow.h">
@@ -308,6 +329,9 @@
     </ClInclude>
     <ClInclude Include="..\DVB-S2\DVBS2.h">
       <Filter>dvb-s2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\dvb_capture_ctl.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

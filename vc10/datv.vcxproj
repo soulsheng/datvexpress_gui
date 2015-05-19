@@ -31,6 +31,10 @@
     <ClCompile Include="..\DVB-S2\dvbs2_physical.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_scrambler.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
+    <ClCompile Include="..\DVB-S\dvbs_modulator.cpp" />
+    <ClCompile Include="..\DVB-S\dvbs_receive.cpp" />
+    <ClCompile Include="..\DVB-S\dvb_interleave.cpp" />
+    <ClCompile Include="..\DVB-S\dvb_rs_encoder.cpp" />
     <ClCompile Include="..\DVB-T\dvb_t.cpp" />
     <ClCompile Include="..\DVB-T\dvb_t_bits.cpp" />
     <ClCompile Include="..\DVB-T\dvb_t_enc.cpp" />
@@ -45,6 +49,8 @@
     <ClCompile Include="..\mainwindow.cpp" />
     <ClCompile Include="..\Sources\dvb.cpp" />
     <ClCompile Include="..\Sources\dvb_buffer.cpp" />
+    <ClCompile Include="..\Sources\dvb_capture.cpp" />
+    <ClCompile Include="..\Sources\dvb_capture_ctl.cpp" />
     <ClCompile Include="..\Sources\dvb_config.cpp" />
     <ClCompile Include="..\Sources\dvb_conv.cpp" />
     <ClCompile Include="..\Sources\dvb_crc32.cpp" />
@@ -137,6 +143,7 @@
     <ClInclude Include="..\DVB-T\dvb_t_sym.h" />
     <ClInclude Include="..\Sources\dvb.h" />
     <ClInclude Include="..\Sources\dvb_buffer.h" />
+    <ClInclude Include="..\Sources\dvb_capture_ctl.h" />
     <ClInclude Include="..\Sources\dvb_config.h" />
     <ClInclude Include="..\Sources\dvb_gen.h" />
     <ClInclude Include="..\Sources\dvb_gui_if.h" />
