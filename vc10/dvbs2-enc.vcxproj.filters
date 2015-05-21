@@ -55,6 +55,7 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\DVB-S2\DVBS2-decode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h">
@@ -66,5 +67,6 @@
     <ClInclude Include="..\Sources\dvb_types.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
   </ItemGroup>
 </Project>
