@@ -12,6 +12,7 @@ void print(scmplx* c, int n);	// output encoded info
 void main()
 {
 	DVBS2*	m_dvbs2 = new DVBS2;
+	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	DVB2FrameFormat	dvbs2_fmt;
 	//
 	// DVB-S2
@@ -35,7 +36,10 @@ void main()
 	int		nSymbol = m_dvbs2->s2_get_n_symbol();
 	print( c, nSymbol );
 
+	m_dvbs2_dec->s2_decode_ts_frame( c );
+
 	delete	m_dvbs2;
+	delete	m_dvbs2_dec;
 }
 
 void init(u8* buffer, int n)	// initialize info

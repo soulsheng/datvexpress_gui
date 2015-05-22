@@ -25,6 +25,10 @@ public:
 	void decode_bbheader();
 
 protected:
+	int	checkSOF(int* sof, int n);
+	void s2_pl_header_decode( u8* modcod, u8* type, int *b);
+	void b_64_7_decode( unsigned char *c, int *b );
+
 private:
 	u8	msg[PACKET_SIZE];
 };

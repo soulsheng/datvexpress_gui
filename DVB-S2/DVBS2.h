@@ -7,7 +7,7 @@
 #endif
 
 class DVBS2 : public DVB2{
-private:
+protected:
         const static unsigned long g[6];
         const static int ph_scram_tab[64];
         const static int ph_sync_seq[26];
