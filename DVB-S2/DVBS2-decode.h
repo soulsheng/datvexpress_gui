@@ -29,6 +29,12 @@ protected:
 	void s2_pl_header_decode( u8* modcod, u8* type, int *b);
 	void b_64_7_decode( unsigned char *c, int *b );
 
+	int demodulate_hard( const scmplx& sym );
+	int demodulate_hard( const scmplx& sym, scmplx* const symTemplate, int n );
+	float distance( const scmplx& cL, const scmplx& cR );
+
+	void pl_scramble_decode( scmplx *fs, int len );
+
 private:
 	u8	msg[PACKET_SIZE];
 };

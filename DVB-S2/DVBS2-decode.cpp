@@ -180,6 +180,30 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	default:
 		break;
 	}
+
+	// config dvb-s2 format 
+	s2_set_configure( &m_format[0] );
+
+	// m_payload_symbols
+	int frame_size = m_format[0].nldpc;
+	switch( m_format[0].constellation )
+	{
+	case M_QPSK:
+		m_payload_symbols = frame_size / 2;
+		break;
+	case M_8PSK:
+		m_payload_symbols = frame_size / 3;
+		break;
+	case M_16APSK:
+		m_payload_symbols = frame_size / 4;
+		break;
+	case M_32APSK:
+		m_payload_symbols = frame_size / 5;
+		break;
+	default:
+		break;
+	}
+
 	return;
 }
 
@@ -265,14 +289,64 @@ void DVBS2_DECODE::s2_pl_header_decode( u8* modcod, u8* type, int *b )
 
 int DVBS2_DECODE::s2_pl_data_decode()
 {
-	int n = 90;// Jump over header
 
+	int m = 0;
+	int n = 90;// Jump over header
+	int blocks = m_payload_symbols/90;
+	//int block_count = 0;
+
+	// Now apply the scrambler to the data part not the header
+	pl_scramble_decode( &m_pl[90], m_payload_symbols );
+	
+	for( int i = 0; i < blocks; i++ )
+	{
+		for( int j = 0; j < 90; j++ )
+		{
+			m_iframe[m++] = demodulate_hard(m_pl[n++]);//m_pl[n++] = m_qpsk[m_iframe[m++]];
+		}
+		// Add pilots if needed
+		// ... todo 
+	}
+
+
+	// Return the length
 	return n;
 }
 
 void DVBS2_DECODE::s2_deinterleave()
 {
+	int rows=0;
 
+	int frame_size = m_format[0].nldpc;
+
+	// no interleave
+	if( m_format[0].constellation == M_QPSK )
+	{
+		rows = frame_size/2;
+		Bit *c1,*c2;
+
+		for( int i = 0; i < rows; i++ )
+		{
+			m_frame[i*2]	= (m_iframe[i]>>1) & 1;
+			m_frame[i*2+1]	= m_iframe[i] & 1;
+
+		}
+		return;
+	}
+
+	// interleave
+	int nConstellationType = m_format[0].constellation + 2;
+	rows = frame_size / nConstellationType;
+
+	for( int i = 0; i < rows; i++ )
+		for (int j=0;j<nConstellationType;j++)
+			if( m_format[0].constellation == M_8PSK && 
+				m_format[0].code_rate == CR_3_5 )
+				m_frame[j*rows+i] = m_iframe[i]<<j & 1;			// MSB of BBHeader first
+			else
+				m_frame[j*rows+i] = m_iframe[i]<<(nConstellationType-1-j) & 1;	// third
+	
+	return;
 }
 
 bool DVBS2_DECODE::decode_ts_frame_base( Bit* b )
@@ -348,4 +422,93 @@ int DVBS2_DECODE::checkSOF( int* sof, int n )
 			return i;
 	}
 	return -1;
+}
+
+int DVBS2_DECODE::demodulate_hard( const scmplx& sym )
+{
+	// m_payload_symbols
+	scmplx*	pSymbolsTemplate = NULL;
+	int nSymbolSize = -1;
+	switch( m_format[0].constellation )
+	{
+	case M_QPSK:
+		pSymbolsTemplate = m_qpsk;
+		nSymbolSize = 1<<2;
+		break;
+	case M_8PSK:
+		pSymbolsTemplate = m_8psk;
+		nSymbolSize = 1<<3;
+		break;
+	case M_16APSK:
+		pSymbolsTemplate = m_16apsk;
+		nSymbolSize = 1<<4;
+		break;
+	case M_32APSK:
+		pSymbolsTemplate = m_32apsk;
+		nSymbolSize = 1<<5;
+		break;
+	default:
+		break;
+	}
+
+	int index = demodulate_hard( sym, pSymbolsTemplate, nSymbolSize );
+
+	return index;
+}
+
+int DVBS2_DECODE::demodulate_hard( const scmplx& sym, scmplx* const symTemplate, int n )
+{
+	int closest = -1;
+	float mindist = 0, dist = 0;
+
+	mindist = distance(sym, symTemplate[0]);
+	closest = 0;
+
+	for (int j = 1; j < n; j++) {
+		dist = distance(sym, symTemplate[j]);
+		if (dist < mindist) {
+			mindist = dist;
+			closest = j;
+		}
+	}
+
+	return closest;
+}
+
+float DVBS2_DECODE::distance( const scmplx& cL, const scmplx& cR )
+{
+	float dist2 = 0;
+	dist2 = (float)(cL.im - cR.im) * (cL.im - cR.im) + (float)(cL.re - cR.re) * (cL.re - cR.re);
+	return dist2;
+}
+
+void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
+{
+	scmplx x;
+
+	// Start at the end of the PL Header.
+
+	for( int n = 0; n < len; n++ )
+	{
+		x = fs[n];
+		switch( m_cscram[n] )
+		{
+		case 0:
+			// Do nothing
+			break;
+		case 1:
+			fs[n].re =  x.im;
+			fs[n].im = -x.re;
+			break;
+		case 2:
+			fs[n].re = -fs[n].re;
+			fs[n].im = -fs[n].im;
+			break;
+		case 03:
+			x = fs[n];
+			fs[n].re = -x.im;
+			fs[n].im =  x.re;
+			break;
+		}
+	}
 }
