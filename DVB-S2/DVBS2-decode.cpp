@@ -353,24 +353,27 @@ bool DVBS2_DECODE::decode_ts_frame_base( Bit* b )
 {
 	if( m_frame_offset_bits == 0 )
 	{
-		// New frame needs to be sent
-		decode_bbheader(); // Add the header
+		// LDPC encode the BB frame and BCHFEC bits
+		ldpc_decode();
+
+		// BCH encode the BB Frame
+		bch_decode();
 
 		// Yes so now Scramble the BB frame
 		bb_randomise_decode();
-		// BCH encode the BB Frame
-		bch_decode();
-		// LDPC encode the BB frame and BCHFEC bits
-		ldpc_decode();
-		return 1;
+
+		// New frame needs to be sent
+		decode_bbheader(); // Add the header
+
+		m_frame_offset_bits += 8; // crc
 	}
 
 	memset( msg, 0, sizeof(u8)*PACKET_SIZE );
 	// Add a new transport packet
-	while( m_frame_offset_bits != m_format[0].kbch )
+	while( m_frame_offset_bits <= m_format[0].kbch )
 		transport_packet_decode_crc( b );
 
-	return 0;
+	return 1;
 }
 
 void DVBS2_DECODE::ldpc_decode()
@@ -385,7 +388,10 @@ void DVBS2_DECODE::bch_decode()
 
 void DVBS2_DECODE::bb_randomise_decode()
 {
-
+	for( int i = 0; i < m_format[0].kbch; i++ )
+	{
+		m_frame[i] ^= m_bb_randomise[i];
+	}
 }
 
 void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
@@ -399,9 +405,78 @@ void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
 	}
 }
 
-void DVBS2_DECODE::decode_bbheader()
+bool DVBS2_DECODE::decode_bbheader()
 {
+	bool bStatus = true;
 
+	int temp;
+
+	BBHeader *h = &m_format[0].bb_header;
+
+	// First byte (MATYPE-1)
+	h->ts_gs	=  m_frame[0] << 1;
+	h->ts_gs	+= m_frame[1];
+	h->sis_mis	=  m_frame[2];
+	h->ccm_acm	=  m_frame[3];
+	h->issyi	=  m_frame[4];
+	h->npd		=  m_frame[5];
+
+	h->ro		= m_frame[6] << 1;
+	h->ro		+= m_frame[7];
+
+	m_frame_offset_bits = 8;
+
+	// Second byte (MATYPE-2)
+	if (h->sis_mis == SIS_MIS_MULTIPLE)
+	{
+		temp = 0;
+		for (int n = 7; n >= 0; n--)
+		{
+			temp += m_frame[m_frame_offset_bits++] << n;// = temp & (1 << n) ? 1 : 0;
+		}
+		h->isi = temp;
+	}
+	else
+	{
+		for (int n = 7; n >= 0 ; n--)
+		{
+			m_frame_offset_bits++;
+		}
+	}
+
+	// UPL (2 bytes)
+	temp = 0;
+	for (int n = 15; n >= 0; n--)
+	{
+		temp += m_frame[m_frame_offset_bits++] << n;
+	}
+	h->upl = temp;
+
+	// DFL (2 byte)
+	temp = 0;
+	for (int n = 15; n >= 0; n--)
+	{
+		temp += m_frame[m_frame_offset_bits++] << n;
+	}
+	h->dfl = temp;
+
+	// SYNC (1 byte)
+	temp = 0;
+	for (int n = 7; n >= 0; n--)
+	{
+		temp += m_frame[m_frame_offset_bits++] << n;
+	}
+	h->sync = temp;
+
+	// Calculate syncd (2 byte), this should point to the MSB of the CRC
+	temp = 0;
+	for (int n = 15; n >= 0; n--)
+	{
+		temp += m_frame[m_frame_offset_bits++] << n;
+	}
+	h->syncd = temp;
+
+	return bStatus;
 }
 
 DVBS2_DECODE::DVBS2_DECODE()
@@ -511,4 +586,9 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 			break;
 		}
 	}
+}
+
+unsigned char* DVBS2_DECODE::getByte()
+{
+	return msg;
 }

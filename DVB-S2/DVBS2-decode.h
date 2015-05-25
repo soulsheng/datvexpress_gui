@@ -22,7 +22,8 @@ public:
 	void bch_decode();
 	void bb_randomise_decode();
 	void transport_packet_decode_crc( Bit* b );
-	void decode_bbheader();
+	bool decode_bbheader();
+	unsigned char* getByte();
 
 protected:
 	int	checkSOF(int* sof, int n);

@@ -137,7 +137,7 @@ protected:
         int m_frame_offset_bits;
         int m_params_changed;
 
-private:
+protected:
     int m_bbheader[BB_HEADER_LENGTH_BITS+CRC8_LENGTH_BITS];
     int m_bb_randomise[FRAME_SIZE_NORMAL];
     u32 m_poly_n_8[4];
