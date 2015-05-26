@@ -26,7 +26,17 @@ void main()
 	dvbs2_fmt.pilots        = 0;
 	dvbs2_fmt.dummy_frame   = 0;
 	dvbs2_fmt.null_deletion = 0;
-	m_dvbs2->s2_set_configure( &dvbs2_fmt );
+	int nStatus = m_dvbs2->s2_set_configure( &dvbs2_fmt );
+	if( -1 == nStatus )
+	{
+		printf(" mode(%d, %d) is invalid ! \n",
+			dvbs2_fmt.constellation, dvbs2_fmt.code_rate );
+
+		delete	m_dvbs2;
+		delete	m_dvbs2_dec;
+
+		return ;
+	}
 
 	u8 b[PACKET_STREAM], bRef[PACKET_STREAM];
 	init( b, PACKET_STREAM );
