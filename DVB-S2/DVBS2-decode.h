@@ -37,7 +37,7 @@ protected:
 	void pl_scramble_decode( scmplx *fs, int len );
 
 private:
-	u8	msg[PACKET_SIZE];
+	u8	msg[FRAME_SIZE_NORMAL/8];
 };
 
 #endif

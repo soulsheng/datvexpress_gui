@@ -5,9 +5,11 @@
 #define PACKET_NUMBER	100
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
+#define PRINT_SIZE		16
 
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n);	// output encoded info
+void print(u8* b, int n);		// output original info
 
 void main()
 {
@@ -28,6 +30,7 @@ void main()
 
 	u8 b[PACKET_STREAM], bRef[PACKET_STREAM];
 	init( b, PACKET_STREAM );
+	print( b, PACKET_STREAM );
 
 	for (int i=0;i<PACKET_NUMBER;i++)
 		m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE );
@@ -37,6 +40,7 @@ void main()
 	print( c, nSymbol );
 
 	m_dvbs2_dec->s2_decode_ts_frame( c );
+	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
 
 	delete	m_dvbs2;
 	delete	m_dvbs2_dec;
@@ -50,8 +54,15 @@ void init(u8* buffer, int n)	// initialize info
 
 void print(scmplx* c, int n)	// output encoded info
 {
-	int nPrint = 255;//n;
+	int nPrint = PRINT_SIZE;//n;
 	for (int i=0;i<nPrint;i++)
 		printf("%d: (%hd,%hd), (%f,%f)\n", i, c[i].re, c[i].im,
 		c[i].re*1.0f/CP, c[i].im*1.0f/CP );
+}
+
+void print(u8* b, int n)		// output original info
+{
+	int nPrint = PRINT_SIZE;//n;
+	for (int i=0;i<nPrint;i++)
+		printf("%d: %d \n", i, b[i] );
 }

@@ -15,7 +15,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	// de-Interleave and pack
 	s2_deinterleave();
 		
-	while( decode_ts_frame_base( m_frame ) );
+	decode_ts_frame_base( m_frame ) ;
 
 	return res;
 }
@@ -369,9 +369,9 @@ bool DVBS2_DECODE::decode_ts_frame_base( Bit* b )
 	}
 
 	memset( msg, 0, sizeof(u8)*PACKET_SIZE );
+
 	// Add a new transport packet
-	while( m_frame_offset_bits <= m_format[0].kbch )
-		transport_packet_decode_crc( b );
+	transport_packet_decode_crc( b );
 
 	return 1;
 }
@@ -396,7 +396,8 @@ void DVBS2_DECODE::bb_randomise_decode()
 
 void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
 {
-	for( int i = 0; i < PACKET_SIZE; i++ )
+	int nByteCount = m_format[0].bb_header.dfl/8;
+	for( int i = 0; i < nByteCount; i++ )
 	{	
 		for( int n = 7; n >= 0; n-- )
 		{
