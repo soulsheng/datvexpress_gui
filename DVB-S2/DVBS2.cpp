@@ -115,6 +115,7 @@ int DVBS2::s2_set_configure( DVB2FrameFormat *f )
     {
         if( set_configure( f ) == 0 )
         {
+			 modulator_configuration();
              calc_efficiency();
              m_s2_config_updated = 1;
              return 0;

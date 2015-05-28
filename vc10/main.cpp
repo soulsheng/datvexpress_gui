@@ -21,7 +21,7 @@ void main()
 	//
 	dvbs2_fmt.frame_type    = FRAME_NORMAL;
 	dvbs2_fmt.code_rate     = CR_3_4;
-	dvbs2_fmt.constellation = M_16APSK;
+	dvbs2_fmt.constellation = M_32APSK;
 	dvbs2_fmt.roll_off      = RO_0_35;
 	dvbs2_fmt.pilots        = 0;
 	dvbs2_fmt.dummy_frame   = 0;
