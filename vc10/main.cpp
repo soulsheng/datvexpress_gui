@@ -8,6 +8,7 @@
 #define PRINT_SIZE		16
 #define DATA_FROM_ENC	1	// ENCODE OR FILE
 
+#define DATA_FILE_NAME	"s31.1_32apsk_34_long.dat"
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n);	// output encoded info
 void print(u8* b, int n);		// output original info
@@ -50,11 +51,14 @@ void main()
 	memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
 		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);
 
-	int		nSymbol = m_dvbs2->s2_get_n_symbol();
-	print( pl, nSymbol );
-
 	delete	m_dvbs2;
+#else
+	FILE *fp = fopen( DATA_FILE_NAME, "rb" );
+	if( fp )
+		fread( pl, sizeof(scmplx), FRAME_SIZE_NORMAL, fp );
 #endif
+
+	print( pl, PACKET_SIZE );
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	m_dvbs2_dec->s2_decode_ts_frame( pl );
