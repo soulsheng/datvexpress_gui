@@ -60,6 +60,7 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	// Mode and code rate
 
 	if ( modcod <= 11 )
+	{
 		m_format[0].constellation = M_QPSK;
 
 	switch( modcod )
@@ -100,8 +101,10 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	default:
 		break;
 	}
+	}
 
 	if ( modcod >= 12 && modcod <= 17 )
+	{
 		m_format[0].constellation = M_8PSK;
 
 
@@ -128,8 +131,10 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	default:
 		break;
 	}
+	}
 
 	if ( modcod >= 18 && modcod <= 23 )
+	{
 		m_format[0].constellation = M_16APSK;
 
 
@@ -156,9 +161,10 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	default:
 		break;
 	}
-
+	}
 
 	if ( modcod >= 24 && modcod <= 28 )
+	{
 		m_format[0].constellation = M_32APSK;
 
 
@@ -181,6 +187,7 @@ void DVBS2_DECODE::s2_pl_header_decode()
 		break;
 	default:
 		break;
+	}
 	}
 
 	// config dvb-s2 format 
@@ -232,6 +239,7 @@ void DVBS2_DECODE::b_64_7_decode( unsigned char *c, int *b )
 		bit >>= 1;
 	}
 
+	// bit[5]
 	bit = 0x80000000;
 	if( temp&bit )
 	{
@@ -239,28 +247,15 @@ void DVBS2_DECODE::b_64_7_decode( unsigned char *c, int *b )
 		temp ^= g[5];
 	}
 
-
-	bit = 0x00001000;
+	// bit[0]
+	bit = 0x40000000;
 	if( temp&bit )
 	{
-		in ^= 0x04;
-		temp ^= g[4];
+		in ^= 0x40;
+		temp ^= g[0];
 	}
 
-	bit = 0x00100000;
-	if( temp&bit )
-	{
-		in ^= 0x08;
-		temp ^= g[3];
-	}
-
-	bit = 0x08000000;
-	if( temp&bit )
-	{
-		in ^= 0x10;
-		temp ^= g[2];
-	}
-
+	// bit[1]
 	bit = 0x20000000;
 	if( temp&bit )
 	{
@@ -268,11 +263,28 @@ void DVBS2_DECODE::b_64_7_decode( unsigned char *c, int *b )
 		temp ^= g[1];
 	}
 
-	bit = 0x40000000;
+	// bit[2]
+	bit = 0x08000000;
 	if( temp&bit )
 	{
-		in ^= 0x40;
-		temp ^= g[0];
+		in ^= 0x10;
+		temp ^= g[2];
+	}	
+
+	// bit[3]
+	bit = 0x00800000;
+	if( temp&bit )
+	{
+		in ^= 0x08;
+		temp ^= g[3];
+	}
+
+	// bit[4]
+	bit = 0x00008000;
+	if( temp&bit )
+	{
+		in ^= 0x04;
+		temp ^= g[4];
 	}
 
 }
