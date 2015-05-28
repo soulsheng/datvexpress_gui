@@ -3,7 +3,7 @@
 
 int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 {
-	memcpy_s( pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL, 
+	memcpy_s( this->m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
 		pl, sizeof(scmplx)*FRAME_SIZE_NORMAL);
 
 	int res = 0;
@@ -16,6 +16,8 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	s2_deinterleave();
 		
 	decode_ts_frame_base( m_frame ) ;
+
+	m_nTotalFrame++;
 
 	return res;
 }
@@ -401,7 +403,7 @@ void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
 	{	
 		for( int n = 7; n >= 0; n-- )
 		{
-			msg[i] += m_frame[m_frame_offset_bits++] << n;
+			msg[m_nTotalFrame][i] += m_frame[m_frame_offset_bits++] << n;
 		}
 	}
 }
@@ -589,7 +591,7 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 	}
 }
 
-unsigned char* DVBS2_DECODE::getByte()
+unsigned char* DVBS2_DECODE::getByte(int nFrame)
 {
-	return msg;
+	return msg[nFrame];
 }

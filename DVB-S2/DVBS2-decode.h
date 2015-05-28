@@ -5,6 +5,7 @@
 #include "DVBS2.h"
 
 #define PACKET_SIZE		188
+#define FRAME_CACHE_MAX	10
 
 class DVBS2_DECODE : public DVBS2
 {
@@ -23,7 +24,7 @@ public:
 	void bb_randomise_decode();
 	void transport_packet_decode_crc( Bit* b );
 	bool decode_bbheader();
-	unsigned char* getByte();
+	unsigned char* getByte(int nFrame=0);
 
 protected:
 	int	checkSOF(int* sof, int n);
@@ -37,7 +38,7 @@ protected:
 	void pl_scramble_decode( scmplx *fs, int len );
 
 private:
-	u8	msg[FRAME_SIZE_NORMAL/8];
+	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];
 };
 
 #endif

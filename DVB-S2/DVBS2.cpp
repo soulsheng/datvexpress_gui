@@ -11,6 +11,11 @@ void  DVBS2::end_of_frame_actions(void)
         modulator_configuration();
         m_s2_config_updated = 0;
     }
+
+	memcpy_s( m_pl_cache[m_nTotalFrame], sizeof(scmplx)*FRAME_SIZE_NORMAL,
+		m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL );
+
+	m_nTotalFrame ++ ;
 }
 
 int DVBS2::is_valid( int mod, int coderate )
@@ -148,6 +153,9 @@ DVBS2::DVBS2()
     modulator_configuration();
     build_symbol_scrambler_table();
     pl_build_dummy();
+
+	m_nTotalFrame = 0;
+
 }
 
 int DVBS2::s2_get_n_symbol()
