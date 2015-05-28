@@ -6,6 +6,7 @@
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
 #define PRINT_SIZE		16
+#define DATA_FROM_ENC	1	// ENCODE OR FILE
 
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n);	// output encoded info
@@ -13,8 +14,10 @@ void print(u8* b, int n);		// output original info
 
 void main()
 {
+	scmplx pl[FRAME_SIZE_NORMAL];
+
+#if DATA_FROM_ENC
 	DVBS2*	m_dvbs2 = new DVBS2;
-	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	DVB2FrameFormat	dvbs2_fmt;
 	//
 	// DVB-S2
@@ -33,7 +36,6 @@ void main()
 			dvbs2_fmt.constellation, dvbs2_fmt.code_rate );
 
 		delete	m_dvbs2;
-		delete	m_dvbs2_dec;
 
 		return ;
 	}
@@ -45,14 +47,18 @@ void main()
 	for (int i=0;i<PACKET_NUMBER;i++)
 		m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE );
 
-	scmplx* c = m_dvbs2->pl_get_frame();
-	int		nSymbol = m_dvbs2->s2_get_n_symbol();
-	print( c, nSymbol );
+	memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
+		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);
 
-	m_dvbs2_dec->s2_decode_ts_frame( c );
-	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
+	int		nSymbol = m_dvbs2->s2_get_n_symbol();
+	print( pl, nSymbol );
 
 	delete	m_dvbs2;
+#endif
+
+	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
+	m_dvbs2_dec->s2_decode_ts_frame( pl );
+	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
 	delete	m_dvbs2_dec;
 }
 
