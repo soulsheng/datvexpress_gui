@@ -356,9 +356,9 @@ void DVBS2_DECODE::s2_deinterleave()
 		for (int j=0;j<nConstellationType;j++)
 			if( m_format[0].constellation == M_8PSK && 
 				m_format[0].code_rate == CR_3_5 )
-				m_frame[j*rows+i] = m_iframe[i]<<j & 1;			// MSB of BBHeader first
+				m_frame[j*rows+i] = m_iframe[i]>>j & 1;			// MSB of BBHeader first
 			else
-				m_frame[j*rows+i] = m_iframe[i]<<(nConstellationType-1-j) & 1;	// third
+				m_frame[j*rows+i] = m_iframe[i]>>(nConstellationType-1-j) & 1;	// third
 	
 	return;
 }
