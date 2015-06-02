@@ -594,7 +594,6 @@ void DVBS2_DECODE::set_configure()
 {
 	// config dvb-s2 format 
 	s2_set_configure( &m_format[0] );
-	N0 = pow(10.0, -EBNO / 10.0) / get_rate();
 
 	// m_payload_symbols
 	int frame_size = m_format[0].nldpc;
