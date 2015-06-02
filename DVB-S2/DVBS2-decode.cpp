@@ -11,6 +11,8 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	// decode the header
 	s2_pl_header_decode();
 
+	set_configure();
+
 	// Now apply the scrambler to the data part not the header
 	pl_scramble_decode( &m_pl[90], m_payload_symbols );
 
@@ -194,28 +196,6 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	}
 	}
 
-	// config dvb-s2 format 
-	s2_set_configure( &m_format[0] );
-
-	// m_payload_symbols
-	int frame_size = m_format[0].nldpc;
-	switch( m_format[0].constellation )
-	{
-	case M_QPSK:
-		m_payload_symbols = frame_size / 2;
-		break;
-	case M_8PSK:
-		m_payload_symbols = frame_size / 3;
-		break;
-	case M_16APSK:
-		m_payload_symbols = frame_size / 4;
-		break;
-	case M_32APSK:
-		m_payload_symbols = frame_size / 5;
-		break;
-	default:
-		break;
-	}
 
 	return;
 }
@@ -607,4 +587,33 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 unsigned char* DVBS2_DECODE::getByte(int nFrame)
 {
 	return msg[nFrame];
+}
+
+
+void DVBS2_DECODE::set_configure()
+{
+	// config dvb-s2 format 
+	s2_set_configure( &m_format[0] );
+	N0 = pow(10.0, -EBNO / 10.0) / get_rate();
+
+	// m_payload_symbols
+	int frame_size = m_format[0].nldpc;
+	switch( m_format[0].constellation )
+	{
+	case M_QPSK:
+		m_payload_symbols = frame_size / 2;
+		break;
+	case M_8PSK:
+		m_payload_symbols = frame_size / 3;
+		break;
+	case M_16APSK:
+		m_payload_symbols = frame_size / 4;
+		break;
+	case M_32APSK:
+		m_payload_symbols = frame_size / 5;
+		break;
+	default:
+		break;
+	}
+
 }

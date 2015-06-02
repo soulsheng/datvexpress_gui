@@ -37,6 +37,8 @@ protected:
 
 	void pl_scramble_decode( scmplx *fs, int len );
 
+	void set_configure();
+
 private:
 	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];
 };
