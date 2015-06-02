@@ -10,8 +10,12 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	
 	// decode the header
 	s2_pl_header_decode();
+
+	// Now apply the scrambler to the data part not the header
+	pl_scramble_decode( &m_pl[90], m_payload_symbols );
+
 	// decode the data
-	res = s2_pl_data_decode();
+	res = s2_demodulate_hard();
 	// de-Interleave and pack
 	s2_deinterleave();
 		
@@ -301,16 +305,13 @@ void DVBS2_DECODE::s2_pl_header_decode( u8* modcod, u8* type, int *b )
 	*modcod = code >>2;
 }
 
-int DVBS2_DECODE::s2_pl_data_decode()
+int DVBS2_DECODE::s2_demodulate_hard()
 {
 
 	int m = 0;
 	int n = 90;// Jump over header
 	int blocks = m_payload_symbols/90;
 	//int block_count = 0;
-
-	// Now apply the scrambler to the data part not the header
-	pl_scramble_decode( &m_pl[90], m_payload_symbols );
 	
 	for( int i = 0; i < blocks; i++ )
 	{

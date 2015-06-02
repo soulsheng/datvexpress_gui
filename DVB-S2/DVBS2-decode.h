@@ -15,7 +15,7 @@ public:
 
 	int s2_decode_ts_frame( scmplx* pl );	// c m_pl[]	->	B ts[]
 	void s2_pl_header_decode();	// c m_pl[90]	->	i MODCOD
-	int s2_pl_data_decode();	// c m_pl[>90]	->	i m_iframe
+	int s2_demodulate_hard();	// c m_pl[>90]	->	i m_iframe
 	void s2_deinterleave();		// i m_iframe	->	b m_frame 
 
 	bool decode_ts_frame_base( Bit* b );
