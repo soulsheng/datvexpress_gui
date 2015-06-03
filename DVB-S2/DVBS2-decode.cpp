@@ -1,5 +1,6 @@
 
 #include "DVBS2-decode.h"
+#include "dvbUtility.h"
 
 int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 {
@@ -17,11 +18,33 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	pl_scramble_decode( &m_pl[90], m_payload_symbols );
 
 	// decode the data
-	res = s2_demodulate_hard();
-	// de-Interleave and pack
-	s2_deinterleave();
-		
-	decode_ts_frame_base( m_frame ) ;
+	if( !m_bDecodeSoft )
+	{
+		res = s2_demodulate_hard();
+
+		// de-Interleave and pack
+		s2_deinterleave();
+	}
+	else
+	{
+		demodulate_soft_bits( &m_pl[90], N0, m_soft_bits );
+
+		ldpc_decode();
+	}
+
+	// BCH encode the BB Frame
+	bch_decode();
+
+	// Yes so now Scramble the BB frame
+	bb_randomise_decode();
+
+	// New frame needs to be sent
+	decode_bbheader(); // Add the header
+
+	m_frame_offset_bits += 8; // crc
+
+	// Add a new transport packet
+	transport_packet_decode_crc( m_frame );
 
 	m_nTotalFrame++;
 
@@ -343,7 +366,7 @@ void DVBS2_DECODE::s2_deinterleave()
 	
 	return;
 }
-
+#if 0
 bool DVBS2_DECODE::decode_ts_frame_base( Bit* b )
 {
 	if( m_frame_offset_bits == 0 )
@@ -370,14 +393,34 @@ bool DVBS2_DECODE::decode_ts_frame_base( Bit* b )
 
 	return 1;
 }
+#endif
 
 void DVBS2_DECODE::ldpc_decode()
 {
+	// b m_frame[N] -> b m_frame[K]
+	if ( !m_bDecodeSoft )
+		return;
 
+	ldpc.bp_decode( m_soft_bits, m_bitOut );
+
+	// interleave
+	int rows=0;
+
+	int frame_size = m_format[0].nldpc;
+
+	int nConstellationType = m_format[0].constellation + 2;
+	rows = frame_size / nConstellationType;
+
+	for( int i = 0; i < rows; i++ )
+		for (int j=0;j<nConstellationType;j++)
+				m_frame[j*rows+i] = m_bitOut[i*rows+j];
 }
 
 void DVBS2_DECODE::bch_decode()
 {
+	// b m_frame[n] -> b m_frame[k] 
+	if ( !m_bDecodeSoft )
+		return;
 
 }
 
@@ -391,6 +434,8 @@ void DVBS2_DECODE::bb_randomise_decode()
 
 void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
 {
+	memset( msg, 0, sizeof(u8)*PACKET_SIZE );
+
 	int nByteCount = m_format[0].bb_header.dfl/8;
 	for( int i = 0; i < nByteCount; i++ )
 	{	
@@ -477,7 +522,7 @@ bool DVBS2_DECODE::decode_bbheader()
 
 DVBS2_DECODE::DVBS2_DECODE()
 {
-
+	m_bDecodeSoft = false;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -589,11 +634,35 @@ unsigned char* DVBS2_DECODE::getByte(int nFrame)
 	return msg[nFrame];
 }
 
+void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits )
+{
+	MOD_TYPE	modType = (MOD_TYPE)(m_format[0].constellation+2);
+	Modulator_2D* pModulator = mods.findModulator( modType );
+
+	cvec	cAWGN( m_payload_symbols );
+
+	for (int i = 0; i< cAWGN.size(); i++ ){
+		cAWGN._elem(i).real( sym[i].re * 1.0/CP );
+		cAWGN._elem(i).imag( sym[i].im * 1.0/CP );
+	}
+
+	vec softbits = pModulator->demodulate_soft_bits(cAWGN, N0);
+
+	convertVecToBuffer( soft_bits, softbits );
+}
+
+float DVBS2_DECODE::get_rate()
+{
+	float rate = m_format[0].kldpc * 1.0f / m_format[0].nldpc;
+
+	return rate;
+}
 
 void DVBS2_DECODE::set_configure()
 {
 	// config dvb-s2 format 
 	s2_set_configure( &m_format[0] );
+	N0 = pow(10.0, -EBNO / 10.0) / get_rate();
 
 	// m_payload_symbols
 	int frame_size = m_format[0].nldpc;
@@ -614,5 +683,11 @@ void DVBS2_DECODE::set_configure()
 	default:
 		break;
 	}
+
+}
+
+void DVBS2_DECODE::initialize()
+{
+	ldpc.initialize();
 
 }

@@ -39,7 +39,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;$(IncludePath)</IncludePath>
+    <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
+    <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -55,6 +56,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>itpp_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -88,12 +90,20 @@
     <ClCompile Include="..\DVB-S2\dvbs2_physical.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_scrambler.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
+    <ClCompile Include="..\fec\dvbUtility.cpp" />
+    <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
+    <ClCompile Include="..\fec\modulatorFactory.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h" />
     <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
     <ClInclude Include="..\DVB-S2\DVBS2.h" />
+    <ClInclude Include="..\fec\dvbUtility.h" />
+    <ClInclude Include="..\fec\helper_timer.h" />
+    <ClInclude Include="..\fec\ldpc_bp_decode.h" />
+    <ClInclude Include="..\fec\modulatorDefinition.h" />
+    <ClInclude Include="..\fec\modulatorFactory.h" />
     <ClInclude Include="..\Sources\dvb_types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

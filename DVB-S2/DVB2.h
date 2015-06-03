@@ -5,7 +5,7 @@
 #include <list>
 #include <stdio.h>
 #include "dvb_types.h"
-
+#include "modulatorDefinition.h"
 using namespace std;
 
 typedef unsigned int u32;
@@ -28,12 +28,13 @@ typedef unsigned char u8;
 
 #define NPD_ACTIVE 1
 #define NPD_NOT_ACTIVE 0
+#if 0
 // Rolloff
 #define RO_0_35 0
 #define RO_0_25 1
 #define RO_0_20 2
 #define RO_RESERVED 3
-
+#endif
 typedef struct{
 	int ts_gs;
 	int sis_mis;
@@ -56,9 +57,9 @@ typedef struct{
 	int stuff_bits;
 }FrameBits;
 
-#define FRAME_SIZE_NORMAL 64800
-#define FRAME_SIZE_SHORT  16200
-#define LDPC_ENCODE_TABLE_LENGTH (FRAME_SIZE_NORMAL*10)
+//#define FRAME_SIZE_NORMAL 64800
+//#define FRAME_SIZE_SHORT  16200
+//#define LDPC_ENCODE_TABLE_LENGTH (FRAME_SIZE_NORMAL*10)
 
 typedef struct{
     int table_length;

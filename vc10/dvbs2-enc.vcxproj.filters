@@ -16,6 +16,9 @@
     <Filter Include="Sources">
       <UniqueIdentifier>{224cb4fe-f875-43b3-8bee-ba88be28b354}</UniqueIdentifier>
     </Filter>
+    <Filter Include="fec">
+      <UniqueIdentifier>{3c412592-0fc1-454b-8d75-9923c5990dbf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\DVB-S2\DVB2.cpp">
@@ -56,6 +59,15 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\DVB-S2\DVBS2-decode.cpp" />
+    <ClCompile Include="..\fec\ldpc_bp_decode.cpp">
+      <Filter>fec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fec\dvbUtility.cpp">
+      <Filter>fec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fec\modulatorFactory.cpp">
+      <Filter>fec</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h">
@@ -68,5 +80,20 @@
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
+    <ClInclude Include="..\fec\ldpc_bp_decode.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\dvbUtility.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\helper_timer.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\modulatorDefinition.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\modulatorFactory.h">
+      <Filter>fec</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

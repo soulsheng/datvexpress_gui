@@ -3,9 +3,13 @@
 #define DVBS2_DECODE_H
 
 #include "DVBS2.h"
+#include "itpp/itcomm.h"
+#include "ldpc_bp_decode.h"
+#include "modulatorFactory.h"
 
 #define PACKET_SIZE		188
 #define FRAME_CACHE_MAX	10
+#define		EBNO			2.6//10 2-2.2	3-5.6	4-8.9	5-12.4
 
 class DVBS2_DECODE : public DVBS2
 {
@@ -18,7 +22,6 @@ public:
 	int s2_demodulate_hard();	// c m_pl[>90]	->	i m_iframe
 	void s2_deinterleave();		// i m_iframe	->	b m_frame 
 
-	bool decode_ts_frame_base( Bit* b );
 	void ldpc_decode();
 	void bch_decode();
 	void bb_randomise_decode();
@@ -38,9 +41,22 @@ protected:
 	void pl_scramble_decode( scmplx *fs, int len );
 
 	void set_configure();
+	void demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits );
+	float get_rate();
+
+	void initialize();
 
 private:
 	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];
+	double N0;
+	double	m_soft_bits[FRAME_SIZE_NORMAL];
+	char	m_bitOut[FRAME_SIZE_NORMAL];
+
+	ldpc_decoder	ldpc;
+	bool	m_bDecodeSoft;
+
+	ModulatorFactory	mods;	// 调制解调器件库
+
 };
 
 #endif
