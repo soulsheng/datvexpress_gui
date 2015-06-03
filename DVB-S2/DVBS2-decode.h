@@ -29,6 +29,8 @@ public:
 	bool decode_bbheader();
 	unsigned char* getByte(int nFrame=0);
 
+	void initialize();
+
 protected:
 	int	checkSOF(int* sof, int n);
 	void s2_pl_header_decode( u8* modcod, u8* type, int *b);
@@ -43,8 +45,6 @@ protected:
 	void set_configure();
 	void demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits );
 	float get_rate();
-
-	void initialize();
 
 private:
 	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];

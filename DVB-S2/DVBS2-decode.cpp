@@ -413,7 +413,7 @@ void DVBS2_DECODE::ldpc_decode()
 
 	for( int i = 0; i < rows; i++ )
 		for (int j=0;j<nConstellationType;j++)
-				m_frame[j*rows+i] = m_bitOut[i*rows+j];
+				m_frame[j*rows+i] = m_bitOut[i*3+j];
 }
 
 void DVBS2_DECODE::bch_decode()
@@ -522,7 +522,7 @@ bool DVBS2_DECODE::decode_bbheader()
 
 DVBS2_DECODE::DVBS2_DECODE()
 {
-	m_bDecodeSoft = false;
+	m_bDecodeSoft = true;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
