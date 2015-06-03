@@ -89,7 +89,9 @@ void main()
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	m_dvbs2_dec->initialize();
+
 	m_dvbs2_dec->s2_decode_ts_frame( pl );
+
 	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
 	delete	m_dvbs2_dec;
 }
