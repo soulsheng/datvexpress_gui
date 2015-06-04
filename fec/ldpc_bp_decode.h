@@ -23,7 +23,7 @@ int Boxplus(int a, int b,
 	short int Dint1, short int Dint2, short int Dint3,	//! Decoder (lookup-table) parameters
 	int* logexp_table );		//! The lookup tables for the decoder
 
-void initialize(
+void initialize(LDPC_CodeFactory* pcodes,
 	bool psc = true,			//!< check syndrom after each iteration
 	int max_iters = 50 );		//!< Maximum number of iterations
 
@@ -48,7 +48,7 @@ public:
 protected:
 	int *LLRin; char *LLRout;
 
-	LDPCFactory	m_ldpcPool;
+	LDPC_DataFactory	m_ldpcPool;
 	LDPC_DATA	*m_ldpcCurrent;
 
 	bool psc;			//!< check syndrom after each iteration

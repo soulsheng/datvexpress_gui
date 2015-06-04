@@ -66,6 +66,8 @@ private:
 
 	ldpc_gpu	ldpc_gpu;
 	bool	m_bUseGPU;
+
+	LDPC_CodeFactory	m_codes;
 };
 
 #endif

@@ -406,7 +406,7 @@ int ldpc_decoder::bp_decode(int *LLRin, char *LLRout, int code_rate)		//!< Maxim
 int ldpc_decoder::bp_decode( vec& softbits, char *LLRout, int code_rate )
 {
 	m_ldpcCurrent = m_ldpcPool.findLDPC_DATA( code_rate );
-	QLLRvec llrIn = m_ldpcCurrent->ldpc.get_llrcalc().to_qllr(softbits);
+	QLLRvec llrIn = m_ldpcCurrent->getCode()->get_llrcalc().to_qllr(softbits);
 
 	return bp_decode( llrIn._data(), LLRout, code_rate);	
 }
@@ -419,11 +419,11 @@ int ldpc_decoder::bp_decode( double* softbits, char *LLRout, int code_rate )
 	return bp_decode( softVec, LLRout, code_rate );
 }
 
-void ldpc_decoder::initialize(
+void ldpc_decoder::initialize(LDPC_CodeFactory* pcodes,
 	bool psc /*= true*/, /*!< check syndrom after each iteration */ 
 	int max_iters /*= 50 */ )
 {
-	m_ldpcPool.initialize();
+	m_ldpcPool.initialize(pcodes);
 
 	this->psc = psc;			//!< check syndrom after each iteration
 	this->max_iters = max_iters;

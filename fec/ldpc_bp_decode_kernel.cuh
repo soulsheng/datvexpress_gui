@@ -2,7 +2,7 @@
 #pragma once
 
 #define		TABLE_SIZE_DINT2	300
-#define		MAX_LOCAL_CACHE		20
+#define		MAX_LOCAL_CACHE		30
 #define		USE_TABLE_CODE		0
 #define		USE_TEXTURE_ADDRESS	0
 #define		USE_SHARED_MLR		0

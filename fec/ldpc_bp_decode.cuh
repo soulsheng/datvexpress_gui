@@ -2,6 +2,8 @@
 #pragma once
 #include <itpp/itcomm.h>
 
+#include "ldpcFactory.h"
+
 class ldpc_gpu
 {
 protected:
@@ -27,11 +29,11 @@ int bp_decode(int *LLRin, int *LLRout,
 		* \param		psc	    参数输入：是否每次迭代都进行奇偶校验
 		* \param		max_iters 参数输入：最大迭代次数
 	*/
-int bp_decode_once(int *LLRin, char *LLRout,
+int bp_decode_once(int *LLRin, char *LLRout, int code_rate, 
 	bool psc = true,			//!< check syndrom after each iteration
 	int max_iters = 50 );		//!< Maximum number of iterations
-int bp_decode_once(itpp::vec& softbits, char *LLRout);		//!< Maximum number of iterations
-int bp_decode_once(double* softbits, char *LLRout);		//!< Maximum number of iterations
+int bp_decode_once(itpp::vec& softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
+int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 
 	/*!
 	   * LDPC解码器初始化   *
@@ -47,21 +49,16 @@ int bp_decode_once(double* softbits, char *LLRout);		//!< Maximum number of iter
 		* \param	Dint1/2/3		参数输入：同对数似然比class LLR_calc_unit
 		* \param	logexp_table	参数输入：对数似然比查找表
 	*/
-	bool	initialize( );
+	bool	initialize( LDPC_CodeFactory* pcodes );
 
 	~ldpc_gpu();
-
-	int get_nvar() const { return nvar; }
-	int get_ncheck() const { return ncheck; }
-	int get_ninfo() const { return nvar - ncheck; }
-	float get_rate();
 
 private:
 	bool	release();
 
 private:
 	int* d_synd ;
-
+#if 0
 	int* d_sumX1 ;
 	int* d_sumX2 ;
 	int* d_mcv ;
@@ -71,22 +68,24 @@ private:
 	int* d_V ;
 
 	int* d_logexp_table ;
-	
+#endif
 	//int *d_ml, *d_mr ;
 	
 	int* d_LLRin ;
 	char* d_LLRout ;
-	
-	int* h_V, *h_sumX2;
 	int* h_mcv, *h_mvc ;
+	int nvar, ncheck;
+#if 0
+	int* h_V, *h_sumX2;
 
 private:
-	int nvar, ncheck;
 	int nmaxX1, nmaxX2; // max(sumX1) max(sumX2)
 	short int Dint1, Dint2, Dint3;	//! Decoder (lookup-table) parameters
+#endif
 	//int max_cnd;	//! Maximum check node degree that the class can handle
 	int QLLR_MAX;
 
-	itpp::LDPC_Code ldpc;
+	LDPC_DataFactory_GPU	m_ldpcDataPool;
+	LDPC_DATA_GPU	*m_ldpcCurrent;
 
 };
