@@ -454,14 +454,14 @@ void DVBS2_DECODE::bb_randomise_decode()
 
 void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
 {
-	memset( msg, 0, sizeof(u8)*PACKET_SIZE );
+	memset( msg, 0, sizeof(u8)*FRAME_SIZE_NORMAL/8 );
 
 	int nByteCount = m_format[0].bb_header.dfl/8;
 	for( int i = 0; i < nByteCount; i++ )
 	{	
 		for( int n = 7; n >= 0; n-- )
 		{
-			msg[m_nTotalFrame][i] += m_frame[m_frame_offset_bits++] << n;
+			msg[i] += m_frame[m_frame_offset_bits++] << n;
 		}
 	}
 }
@@ -651,9 +651,9 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 	}
 }
 
-unsigned char* DVBS2_DECODE::getByte(int nFrame)
+unsigned char* DVBS2_DECODE::getByte()
 {
-	return msg[nFrame];
+	return msg;
 }
 
 void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits )

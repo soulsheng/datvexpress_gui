@@ -10,7 +10,7 @@
 #include "ldpc_bp_decode.cuh"
 
 #define PACKET_SIZE		188
-#define FRAME_CACHE_MAX	10
+
 #define		EBNO			2.6//10 2-2.2	3-5.6	4-8.9	5-12.4
 
 class DVBS2_DECODE : public DVBS2
@@ -31,7 +31,7 @@ public:
 	void bb_randomise_decode();
 	void transport_packet_decode_crc( Bit* b );
 	bool decode_bbheader();
-	unsigned char* getByte(int nFrame=0);
+	unsigned char* getByte();
 
 	void initialize();
 
@@ -51,7 +51,7 @@ protected:
 	float get_rate();
 
 private:
-	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];
+	u8	msg[FRAME_SIZE_NORMAL/8];
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
