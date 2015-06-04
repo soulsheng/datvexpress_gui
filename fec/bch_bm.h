@@ -98,7 +98,7 @@ public:
 
 void initialize();
 
-void setCode( CODE_RATE rate, FRAME_TYPE type );
+void setCode( int rate, int type );
 
 int getN( );
 int getK( );
@@ -125,8 +125,8 @@ private:
 
 	int S[(MAXT + DRIFT)*2];          // Syndrome vector
 
-	CODE_RATE	code_rate; 
-	FRAME_TYPE	code_type; 
+	int	code_rate; 
+	int	code_type; 
 };
 
 #endif

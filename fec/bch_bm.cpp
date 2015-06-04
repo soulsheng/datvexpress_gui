@@ -508,7 +508,7 @@ void BCH_BM::gfField(int m, // Base 2 logarithm of cardinality of the Field
 bool BCH_BM::error_detection(  char* codeword)
 {
 	int tCapacity = 0;
-	if ( code_type == FECFRAME_NORMAL )
+	if ( code_type == FRAME_NORMAL )
 		tCapacity = t(n,k) + DRIFT;
 	else
 		tCapacity = 12 + DRIFT;
@@ -539,7 +539,7 @@ void BCH_BM::BerlMass( )
 
 {
 	int tCapacity = 0;
-	if ( code_type == FECFRAME_NORMAL )
+	if ( code_type == FRAME_NORMAL )
 		tCapacity = t(n,k) + DRIFT;
 	else
 		tCapacity = 12 + DRIFT;
@@ -747,45 +747,45 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 
 }
 
-void BCH_BM::setCode( CODE_RATE rate, FRAME_TYPE type )
+void BCH_BM::setCode( int rate, int type )
 {
 	code_rate = rate;
 	code_type = type;
 
-	if( FECFRAME_NORMAL == code_type ) {
+	if( FRAME_NORMAL == code_type ) {
 		switch( code_rate )
 		{
-		case C1_4:	
+		case CR_1_4:	
 			n = 16200; k=16008;
 			break;
-		case C1_3:	
+		case CR_1_3:	
 			n = 21600; k=21408; 
 			break;
-		case C2_5:	
+		case CR_2_5:	
 			n = 25920; k=25728; 
 			break;
-		case C1_2:	
+		case CR_1_2:	
 			n = 32400; k=32208; 
 			break;
-		case C3_5:	
+		case CR_3_5:	
 			n = 38880; k=38688; 
 			break;
-		case C2_3:	
+		case CR_2_3:	
 			n = 43200; k=43040; 
 			break;
-		case C3_4:	
+		case CR_3_4:	
 			n = 48600; k=48408; 
 			break;
-		case C4_5:	
+		case CR_4_5:	
 			n = 51840; k=51648; 
 			break;
-		case C5_6:	
+		case CR_5_6:	
 			n = 54000; k=53840; 
 			break;
-		case C8_9:	
+		case CR_8_9:	
 			n = 57600; k=57472; 
 			break;
-		case C9_10:	
+		case CR_9_10:	
 			n = 58320; k=58192;
 			break;
 		default:
@@ -801,34 +801,34 @@ void BCH_BM::setCode( CODE_RATE rate, FRAME_TYPE type )
 	{
 		switch( code_rate )
 		{
-		case C1_4:	
+		case CR_1_4:	
 			n = 3240; k=3072;
 			break;
-		case C1_3:	
+		case CR_1_3:	
 			n = 5400; k=5232; 
 			break;
-		case C2_5:	
+		case CR_2_5:	
 			n = 6480; k=6312; 
 			break;
-		case C1_2:	
+		case CR_1_2:	
 			n = 7200; k=7032; 
 			break;
-		case C3_5:	
+		case CR_3_5:	
 			n = 9720; k=9552; 
 			break;
-		case C2_3:	
+		case CR_2_3:	
 			n = 10800; k=10632; 
 			break;
-		case C3_4:	
+		case CR_3_4:	
 			n = 11880; k=11712; 
 			break;
-		case C4_5:	
+		case CR_4_5:	
 			n = 12600; k=12432; 
 			break;
-		case C5_6:	
+		case CR_5_6:	
 			n = 13320; k=13152; 
 			break;
-		case C8_9:	
+		case CR_8_9:	
 			n = 14400; k=14232; 
 			break;
 		default:
