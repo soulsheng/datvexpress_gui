@@ -22,6 +22,7 @@ public:
 	int s2_demodulate_hard();	// c m_pl[>90]	->	i m_iframe
 	void s2_deinterleave();		// i m_iframe	->	b m_frame 
 	void s2_i2b();				// i m_iframe	->	b m_frame 
+	void reorder_softbit();
 
 	void ldpc_decode();
 	void bch_decode();
@@ -51,6 +52,7 @@ private:
 	u8	msg[FRAME_CACHE_MAX][FRAME_SIZE_NORMAL/8];
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
+	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
 	char	m_bitOut[FRAME_SIZE_NORMAL];
 
 	ldpc_decoder	ldpc;

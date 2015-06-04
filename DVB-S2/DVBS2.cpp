@@ -159,7 +159,7 @@ DVBS2::DVBS2()
     pl_build_dummy();
 
 	m_nTotalFrame = 0;
-	m_bInterleave = false;
+	m_bInterleave = true;
 
 }
 
