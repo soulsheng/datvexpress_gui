@@ -68,6 +68,9 @@
     <ClCompile Include="..\fec\modulatorFactory.cpp">
       <Filter>fec</Filter>
     </ClCompile>
+    <ClCompile Include="..\fec\bch_bm.cpp">
+      <Filter>fec</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h">
@@ -93,6 +96,9 @@
       <Filter>fec</Filter>
     </ClInclude>
     <ClInclude Include="..\fec\modulatorFactory.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\bch_bm.h">
       <Filter>fec</Filter>
     </ClInclude>
   </ItemGroup>

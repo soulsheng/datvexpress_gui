@@ -90,6 +90,7 @@
     <ClCompile Include="..\DVB-S2\dvbs2_physical.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_scrambler.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
+    <ClCompile Include="..\fec\bch_bm.cpp" />
     <ClCompile Include="..\fec\dvbUtility.cpp" />
     <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
     <ClCompile Include="..\fec\modulatorFactory.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\DVB-S2\DVB2.h" />
     <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
     <ClInclude Include="..\DVB-S2\DVBS2.h" />
+    <ClInclude Include="..\fec\bch_bm.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />
     <ClInclude Include="..\fec\helper_timer.h" />
     <ClInclude Include="..\fec\ldpc_bp_decode.h" />
