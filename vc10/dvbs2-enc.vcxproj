@@ -96,6 +96,7 @@
     <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
     <ClCompile Include="..\fec\bch_bm.cpp" />
     <ClCompile Include="..\fec\dvbUtility.cpp" />
+    <ClCompile Include="..\fec\ldpcFactory.cpp" />
     <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
     <ClCompile Include="..\fec\modulatorFactory.cpp" />
     <ClCompile Include="main.cpp" />
@@ -107,6 +108,7 @@
     <ClInclude Include="..\fec\bch_bm.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />
     <ClInclude Include="..\fec\helper_timer.h" />
+    <ClInclude Include="..\fec\ldpcFactory.h" />
     <ClInclude Include="..\fec\ldpc_bp_decode.h" />
     <ClInclude Include="..\fec\modulatorDefinition.h" />
     <ClInclude Include="..\fec\modulatorFactory.h" />
