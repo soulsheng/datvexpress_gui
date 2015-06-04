@@ -27,10 +27,13 @@ protected:
         double m_efficiency;
         int m_s2_config_updated;
 		int m_nTotalFrame;
+		bool	m_bInterleave;
+
         void b_64_7_code( unsigned char in, int *out );
         void s2_pl_header_encode( u8 modcod, u8 type, int *out);
         void modulator_configuration(void);
         void s2_interleave( void );
+		void s2_b2i( void );
         void s2_pl_header_create(void);
         int  s2_pl_data_pack( void );
         void pl_scramble_symbols( scmplx *fs, int len );

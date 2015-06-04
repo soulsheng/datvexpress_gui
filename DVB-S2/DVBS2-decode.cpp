@@ -23,7 +23,10 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		res = s2_demodulate_hard();
 
 		// de-Interleave and pack
-		s2_deinterleave();
+		if( m_bInterleave )
+			s2_deinterleave();
+		else
+			s2_i2b();
 	}
 	else
 	{
@@ -413,7 +416,7 @@ void DVBS2_DECODE::ldpc_decode()
 
 	for( int i = 0; i < rows; i++ )
 		for (int j=0;j<nConstellationType;j++)
-				m_frame[j*rows+i] = m_bitOut[i*3+j];
+				m_frame[i*nConstellationType+j] = m_bitOut[i*nConstellationType+j];
 }
 
 void DVBS2_DECODE::bch_decode()
@@ -522,7 +525,7 @@ bool DVBS2_DECODE::decode_bbheader()
 
 DVBS2_DECODE::DVBS2_DECODE()
 {
-	m_bDecodeSoft = true;
+	m_bDecodeSoft = false;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -690,4 +693,21 @@ void DVBS2_DECODE::initialize()
 {
 	ldpc.initialize();
 
+}
+
+void DVBS2_DECODE::s2_i2b()
+{
+	int rows=0;
+
+	int frame_size = m_format[0].nldpc;
+
+	// interleave
+	int nConstellationType = m_format[0].constellation + 2;
+	rows = frame_size / nConstellationType;
+
+	for( int i = 0; i < rows; i++ )
+		for (int j=0;j<nConstellationType;j++)
+			m_frame[i*nConstellationType+j] = m_iframe[i]>>(nConstellationType-1-j) & 1;	// third
+
+	return;
 }

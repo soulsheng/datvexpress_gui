@@ -134,7 +134,10 @@ int DVBS2::s2_add_ts_frame( u8 *ts )
     if( next_ts_frame_base( ts ) )
     {
         // Interleave and pack
-        s2_interleave();
+		if( m_bInterleave )
+			s2_interleave();
+		else
+			s2_b2i();
         // create the header
         s2_pl_header_create();
         // Add the data
@@ -156,6 +159,7 @@ DVBS2::DVBS2()
     pl_build_dummy();
 
 	m_nTotalFrame = 0;
+	m_bInterleave = false;
 
 }
 
