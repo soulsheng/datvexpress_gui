@@ -410,7 +410,10 @@ void DVBS2_DECODE::ldpc_decode()
 	if ( !m_bDecodeSoft )
 		return;
 
-	ldpc.bp_decode( m_soft_bits, m_bitLDPC );
+	if( !m_bUseGPU )
+		ldpc.bp_decode( m_soft_bits, m_bitLDPC );
+	else
+		ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC );
 
 	// interleave
 	int rows=0;
@@ -540,6 +543,8 @@ bool DVBS2_DECODE::decode_bbheader()
 DVBS2_DECODE::DVBS2_DECODE()
 {
 	m_bDecodeSoft = true;
+
+	m_bUseGPU = true;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -711,6 +716,7 @@ void DVBS2_DECODE::initialize()
 
 	bch.initialize();
 
+	ldpc_gpu.initialize();
 }
 
 void DVBS2_DECODE::s2_i2b()

@@ -19,6 +19,9 @@
     <Filter Include="fec">
       <UniqueIdentifier>{3c412592-0fc1-454b-8d75-9923c5990dbf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cuda">
+      <UniqueIdentifier>{3b10fad4-8b53-4907-8191-730fe93d3c94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\DVB-S2\DVB2.cpp">
@@ -101,5 +104,18 @@
     <ClInclude Include="..\fec\bch_bm.h">
       <Filter>fec</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\fec\ldpc_bp_decode.cuh">
+      <Filter>cuda</Filter>
+    </None>
+    <None Include="..\fec\ldpc_bp_decode_kernel.cuh">
+      <Filter>cuda</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

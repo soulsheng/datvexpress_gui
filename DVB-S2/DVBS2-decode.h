@@ -7,6 +7,7 @@
 #include "ldpc_bp_decode.h"
 #include "modulatorFactory.h"
 #include "bch_bm.h"
+#include "ldpc_bp_decode.cuh"
 
 #define PACKET_SIZE		188
 #define FRAME_CACHE_MAX	10
@@ -63,6 +64,8 @@ private:
 	ModulatorFactory	mods;	// 调制解调器件库
 	BCH_BM	bch;
 
+	ldpc_gpu	ldpc_gpu;
+	bool	m_bUseGPU;
 };
 
 #endif
