@@ -48,3 +48,8 @@ void convertVecToBuffer( double* buffer, vec& a );
 
 void convertVecToBuffer( double* buffer, cvec& a );
 
+
+//! Maximum value of vector
+int max(int *v, int N);
+//! Minimum value of vector
+int min(int *v, int N);

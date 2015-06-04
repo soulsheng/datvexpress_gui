@@ -8,26 +8,6 @@ using namespace std;
 //#include "driverUtility.h"
 #include "dvbUtility.h"
 
-//! Maximum value of vector
-int max(int *v, int N)
-{
-	int tmp = v[0];
-	for (int i = 1; i < N; i++)
-		if (v[i] > tmp)
-			tmp = v[i];
-	return tmp;
-}
-
-//! Minimum value of vector
-int min(int *v, int N)
-{
-	int tmp = v[0];
-	for (int i = 1; i < N; i++)
-		if (v[i] < tmp)
-			tmp = v[i];
-	return tmp;
-}
-
 bool ldpc_decoder::syndrome_check(char *LLR,
 	int ncheck, 
 	int* sumX2, 

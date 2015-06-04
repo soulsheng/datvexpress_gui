@@ -42,3 +42,23 @@ void convertVecToBuffer( double* buffer, cvec& a )
 		buffer[i*2+1]	= a._elem(i).imag( );
 	}
 }
+
+//! Maximum value of vector
+int max(int *v, int N)
+{
+	int tmp = v[0];
+	for (int i = 1; i < N; i++)
+		if (v[i] > tmp)
+			tmp = v[i];
+	return tmp;
+}
+
+//! Minimum value of vector
+int min(int *v, int N)
+{
+	int tmp = v[0];
+	for (int i = 1; i < N; i++)
+		if (v[i] < tmp)
+			tmp = v[i];
+	return tmp;
+}
