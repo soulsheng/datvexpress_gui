@@ -410,7 +410,7 @@ void DVBS2_DECODE::ldpc_decode()
 	if ( !m_bDecodeSoft )
 		return;
 
-	ldpc.bp_decode( m_soft_bits, m_bitOut );
+	ldpc.bp_decode( m_soft_bits, m_bitLDPC );
 
 	// interleave
 	int rows=0;
@@ -422,7 +422,7 @@ void DVBS2_DECODE::ldpc_decode()
 
 	for( int i = 0; i < rows; i++ )
 		for (int j=0;j<nConstellationType;j++)
-				m_frame[i*nConstellationType+j] = m_bitOut[i*nConstellationType+j];
+				m_frame[i*nConstellationType+j] = m_bitLDPC[i*nConstellationType+j];
 }
 
 void DVBS2_DECODE::bch_decode()
@@ -430,6 +430,14 @@ void DVBS2_DECODE::bch_decode()
 	// b m_frame[n] -> b m_frame[k] 
 	if ( !m_bDecodeSoft )
 		return;
+
+	for(int i=0;i<FRAME_SIZE_NORMAL;i++)
+		m_bitLDPC[i] = m_frame[i];
+
+	bch.decode( m_bitBCH, m_bitLDPC );
+
+	for(int i=0;i<FRAME_SIZE_NORMAL;i++)
+		m_frame[i] = m_bitBCH[i];
 
 }
 
@@ -693,11 +701,15 @@ void DVBS2_DECODE::set_configure()
 		break;
 	}
 
+	bch.setCode( m_format[0].code_rate, m_format[0].frame_type );
+
 }
 
 void DVBS2_DECODE::initialize()
 {
 	ldpc.initialize();
+
+	bch.initialize();
 
 }
 

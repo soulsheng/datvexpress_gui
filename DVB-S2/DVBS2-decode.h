@@ -6,6 +6,7 @@
 #include "itpp/itcomm.h"
 #include "ldpc_bp_decode.h"
 #include "modulatorFactory.h"
+#include "bch_bm.h"
 
 #define PACKET_SIZE		188
 #define FRAME_CACHE_MAX	10
@@ -53,12 +54,14 @@ private:
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
-	char	m_bitOut[FRAME_SIZE_NORMAL];
+	char	m_bitLDPC[FRAME_SIZE_NORMAL];
+	char	m_bitBCH[FRAME_SIZE_NORMAL];
 
 	ldpc_decoder	ldpc;
 	bool	m_bDecodeSoft;
 
 	ModulatorFactory	mods;	// 调制解调器件库
+	BCH_BM	bch;
 
 };
 
