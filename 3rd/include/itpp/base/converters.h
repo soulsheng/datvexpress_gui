@@ -319,7 +319,7 @@ inline double rad_to_deg(double x) { return (180.0 / itpp::pi * x); }
 inline double deg_to_rad(double x) { return (itpp::pi / 180.0 * x); }
 
 //! Round to nearest integer, return result in double
-double round(double x);
+double roundl(double x);
 //! Round to nearest integer
 vec round(const vec &x);
 //! Round to nearest integer
@@ -389,7 +389,7 @@ cmat round_to_zero(const cmat &x, double threshold = 1e-14);
 //! Remove trailing digits, found after the decimal point, for numbers greater than threshold
 inline double round_to_infty(const double in, const double threshold = 1e9)
 {
-  return (std::fabs(in)>threshold)?itpp::round(in):in;
+  return (std::fabs(in)>threshold)?itpp::roundl(in):in;
 }
 
 //! Remove trailing digits, found after the decimal point, for complex numbers whose real and imaginary parts are greater than threshold
