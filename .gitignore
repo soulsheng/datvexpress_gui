@@ -5,3 +5,4 @@
 /vc10/GeneratedFiles
 /vc10/Debug
 /vc10/*.suo
+/3rd/lib/*.lib
