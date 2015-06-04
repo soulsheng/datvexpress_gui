@@ -645,8 +645,8 @@ unsigned char* DVBS2_DECODE::getByte(int nFrame)
 
 void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits )
 {
-	MOD_TYPE	modType = (MOD_TYPE)(m_format[0].constellation+2);
-	Modulator_2D* pModulator = mods.findModulator( modType );
+
+	Modulator_2D* pModulator = mods.findModulator( m_format[0].constellation );
 
 	cvec	cAWGN( m_payload_symbols );
 

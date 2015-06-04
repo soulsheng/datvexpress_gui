@@ -2,7 +2,7 @@
 #include "modulatorFactory.h"
 
 
-SymbolTable::SymbolTable( int k, CODE_RATE rate, FRAME_TYPE framesize )
+SymbolTable::SymbolTable( int k, int rate, int framesize )
 {
 	this->k = k;
 	this->rate = rate;
@@ -68,26 +68,26 @@ SymbolTable::SymbolTable( int k, CODE_RATE rate, FRAME_TYPE framesize )
 
 	case 4:
 		r2 = 1.0f;
-		if (framesize == FECFRAME_NORMAL)
+		if (framesize == FRAME_NORMAL)
 		{
 			switch(rate)
 			{
-			case C2_3:
+			case CR_2_3:
 				r1 = r2 / 3.15;
 				break;
-			case C3_4:
+			case CR_3_4:
 				r1 = r2 / 2.85;
 				break;
-			case C4_5:
+			case CR_4_5:
 				r1 = r2 / 2.75;
 				break;
-			case C5_6:
+			case CR_5_6:
 				r1 = r2 / 2.70;
 				break;
-			case C8_9:
+			case CR_8_9:
 				r1 = r2 / 2.60;
 				break;
-			case C9_10:
+			case CR_9_10:
 				r1 = r2 / 2.57;
 				break;
 
@@ -100,19 +100,19 @@ SymbolTable::SymbolTable( int k, CODE_RATE rate, FRAME_TYPE framesize )
 		{
 			switch(rate)
 			{
-			case C2_3:
+			case CR_2_3:
 				r1 = r2 / 3.15;
 				break;
-			case C3_4:
+			case CR_3_4:
 				r1 = r2 / 2.85;
 				break;
-			case C4_5:
+			case CR_4_5:
 				r1 = r2 / 2.75;
 				break;
-			case C5_6:
+			case CR_5_6:
 				r1 = r2 / 2.70;
 				break;
-			case C8_9:
+			case CR_8_9:
 				r1 = r2 / 2.60;
 				break;
 
@@ -163,23 +163,23 @@ SymbolTable::SymbolTable( int k, CODE_RATE rate, FRAME_TYPE framesize )
 
 		switch(rate)
 		{
-		case C3_4:
+		case CR_3_4:
 			r1 = r3 / 5.27;
 			r2 = r1 * 2.84;
 			break;
-		case C4_5:
+		case CR_4_5:
 			r1 = r3 / 4.87;
 			r2 = r1 * 2.72;
 			break;
-		case C5_6:
+		case CR_5_6:
 			r1 = r3 / 4.64;
 			r2 = r1 * 2.64;
 			break;
-		case C8_9:
+		case CR_8_9:
 			r1 = r3 / 4.33;
 			r2 = r1 * 2.54;
 			break;
-		case C9_10:
+		case CR_9_10:
 			r1 = r3 / 4.30;
 			r2 = r1 * 2.53;
 			break;
@@ -263,13 +263,12 @@ SymbolTable::SymbolTable( int k, CODE_RATE rate, FRAME_TYPE framesize )
 
 ModulatorFactory::ModulatorFactory()
 {
-	for (int i=MOD_DEFAULT+1; i<MOD_COUNT; i++)
+	for (int i=0; i<M_CONST_NUMBER; i++)
 	{
-		MOD_TYPE modType = (MOD_TYPE)i;
-		SymbolTable symbolItem(modType);
+		SymbolTable symbolItem(i+2);
 		Modulator_2D* pModulator = new Modulator_2D( symbolItem.getSymbols(), symbolItem.getBits10Symbols() );
 
-		m_modPool.insert( ModPoolPair(modType, pModulator) );
+		m_modPool.insert( ModPoolPair(i, pModulator) );
 	}
 }
 
@@ -281,7 +280,7 @@ ModulatorFactory::~ModulatorFactory()
 	m_modPool.clear();
 }
 
-Modulator_2D* ModulatorFactory::findModulator( MOD_TYPE modType )
+Modulator_2D* ModulatorFactory::findModulator( int modType )
 {
 	ModPoolItr itr=m_modPool.find( modType );
 	if ( itr != m_modPool.end() )

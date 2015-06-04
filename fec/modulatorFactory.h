@@ -13,10 +13,10 @@ struct SymbolTable
 	Vec<bvec>	bits2symbols;
 	int		k;
 	double  r1, r2, r3;
-	CODE_RATE rate;
-	FRAME_TYPE framesize;
+	int rate;
+	int framesize;
 
-	SymbolTable(int k, CODE_RATE rate=C3_4, FRAME_TYPE framesize=FECFRAME_NORMAL);
+	SymbolTable(int k, int rate=CR_3_4, int framesize=FRAME_NORMAL);
 	cvec&	getSymbols()	{ return symbols;}
 	ivec&	getBits10Symbols()	{ return bits10symbols;}
 };
@@ -32,13 +32,13 @@ public:
 		* \param 	modType 		参数输入：从BB Header解析的调制类型
 		* \return 	从调试器工厂查找匹配的解调器
 	*/
-	Modulator_2D* findModulator(MOD_TYPE modType);
+	Modulator_2D* findModulator(int modType);
 
 protected:
 private:
-	typedef map<MOD_TYPE, Modulator_2D*> ModPool;
-	typedef map<MOD_TYPE, Modulator_2D*>::iterator ModPoolItr;
-	typedef pair<MOD_TYPE, Modulator_2D*> ModPoolPair;
+	typedef map<int, Modulator_2D*> ModPool;
+	typedef map<int, Modulator_2D*>::iterator ModPoolItr;
+	typedef pair<int, Modulator_2D*> ModPoolPair;
 
 	ModPool	m_modPool;		//!解调器工厂，QPSK/8PSK/16APSK/32APSK
 };
