@@ -664,7 +664,7 @@ void BCH_BM::printNK( char* message, char* codeword, int length )
 
 void BCH_BM::BCH_final_dec(  char* message, char* codeword )
 {
-	for (int i=n-1;i>=n-k;i--)
+	for (int i=0;i<k;i++)
 		message[i] = codeword[i];
 }
 
