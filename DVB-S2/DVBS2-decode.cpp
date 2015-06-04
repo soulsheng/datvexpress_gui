@@ -544,7 +544,7 @@ DVBS2_DECODE::DVBS2_DECODE()
 {
 	m_bDecodeSoft = true;
 
-	m_bUseGPU = false;
+	m_bUseGPU = true;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()

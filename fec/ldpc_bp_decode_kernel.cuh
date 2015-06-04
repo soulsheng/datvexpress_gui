@@ -2,10 +2,7 @@
 #pragma once
 
 #define		TABLE_SIZE_DINT2	300
-#define		MAX_CHECK_NODE		6//10
-#define		MAX_VAR_NODE		3//19
-#define		VAR_SIZE_CODE		16200
-#define		CHECK_SIZE_CODE		8100//8073
+#define		MAX_LOCAL_CACHE		20
 #define		USE_TABLE_CODE		0
 #define		USE_TEXTURE_ADDRESS	0
 #define		USE_SHARED_MLR		0
@@ -159,8 +156,8 @@ void updateCheckNode_kernel( const int ncheck, const int nvar,
 	if( j>= ncheck )
 		return;
 
-	int ml[MAX_CHECK_NODE];//int* ml	= d_ml	+ j * max_cnd;
-	int mr[MAX_CHECK_NODE];//int* mr	= d_mr	+ j * max_cnd;
+	int ml[MAX_LOCAL_CACHE];//int* ml	= d_ml	+ j * max_cnd;
+	int mr[MAX_LOCAL_CACHE];//int* mr	= d_mr	+ j * max_cnd;
 
 	int nodes = sumX2[j];
 
@@ -214,8 +211,8 @@ void updateCheckNodeShared_kernel( const int ncheck, const int nvar,
 	__shared__ int s_mr[MAX_CHECK_NODE*SIZE_BLOCK];
 	int* mr	= s_mr	+ threadIdx.x * MAX_CHECK_NODE;
 #else
-	int ml[MAX_CHECK_NODE];
-	int mr[MAX_CHECK_NODE];
+	int ml[MAX_LOCAL_CACHE];
+	int mr[MAX_LOCAL_CACHE];
 #endif
 
 	int nodes = sumX2[j];
@@ -282,7 +279,7 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 
 	int mvc_temp = LLRin[i];
 
-	int m[MAX_VAR_NODE];
+	int m[MAX_LOCAL_CACHE];
 	//if( threadIdx.x == nvar )		kernel updateVar read 3 misalligned global memory cost 80% time on tesla c2050
 	for (int jp = 0; jp < sumX1[i]; jp++)
 		m[jp] = mcv[ iind[i + jp*nvar] ];
@@ -321,9 +318,9 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	}
 	__syncthreads();
 
-	int ml[MAX_CHECK_NODE];//int* ml	= d_ml	+ j * max_cnd;
-	int mr[MAX_CHECK_NODE];//int* mr	= d_mr	+ j * max_cnd;
-	int m[MAX_CHECK_NODE];
+	int ml[MAX_LOCAL_CACHE];//int* ml	= d_ml	+ j * max_cnd;
+	int mr[MAX_LOCAL_CACHE];//int* mr	= d_mr	+ j * max_cnd;
+	int m[MAX_LOCAL_CACHE];
 
 	switch( sumX2[j] )
 	{
@@ -399,7 +396,7 @@ void updateVariableNodeOpti2D_kernel( const int nvar, const int ncheck, const in
 		return;
 		
 	__shared__ int mvc_temp[SIZE_BLOCK_2D_X];
-	__shared__ int m[MAX_VAR_NODE][SIZE_BLOCK_2D_X];
+	__shared__ int m[MAX_LOCAL_CACHE][SIZE_BLOCK_2D_X];
 	
 
 	if( threadIdx.y < sumX1[i] )

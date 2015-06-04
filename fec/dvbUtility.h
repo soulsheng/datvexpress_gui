@@ -16,8 +16,6 @@
 #define		T_BCH			2
 #define		K_BCH			21
 
-#define		VAR_SIZE_CODE		16200
-#define		CHECK_SIZE_CODE		8100//8073
 
 #define		REMOVE_NOISE		1
 

@@ -221,7 +221,7 @@ bool ldpc_gpu::initialize( )
 {
 	itpp::LDPC_Generator_Systematic G; // for codes created with ldpc_gen_codes since generator exists
 	
-	ldpc.load_code(FILENAME_IT, &G);
+	ldpc.load_code(FILENAME_IT34, &G);
 
 
 	int nmaxX1 = max(ldpc.sumX1._data(), ldpc.sumX1.size());
