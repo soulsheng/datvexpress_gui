@@ -53,7 +53,10 @@ void main()
 	print( b, PACKET_STREAM );
 
 	for (int i=0;i<PACKET_NUMBER;i++)
-		m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE );
+	{
+		if( m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE ) )
+			break;
+	}
 
 	memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
 		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);

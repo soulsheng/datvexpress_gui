@@ -411,7 +411,7 @@ void DVBS2_DECODE::ldpc_decode()
 		return;
 
 	if( !m_bUseGPU )
-		ldpc.bp_decode( m_soft_bits, m_bitLDPC );
+		ldpc.bp_decode( m_soft_bits, m_bitLDPC, m_format[0].code_rate  );
 	else
 		ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC );
 
@@ -544,7 +544,7 @@ DVBS2_DECODE::DVBS2_DECODE()
 {
 	m_bDecodeSoft = true;
 
-	m_bUseGPU = true;
+	m_bUseGPU = false;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()

@@ -50,6 +50,7 @@ using namespace std;
 #define CR_5_6 8
 #define CR_8_9 9
 #define CR_9_10 10
+#define CODE_RATE_COUNT	11
 
 #define FRAME_NORMAL 0x00
 #define FRAME_SHORT  0x10

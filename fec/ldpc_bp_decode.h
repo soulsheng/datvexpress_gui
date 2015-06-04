@@ -2,6 +2,8 @@
 #pragma once
 #include <itpp/itcomm.h>
 
+#include "ldpcFactory.h"
+
 using namespace std;
 using namespace itpp;
 
@@ -36,27 +38,19 @@ void updateVariableNode( int nvar, int* sumX1,
 
 void initializeMVC( int nvar, int* sumX1, int* mvc, int * LLRin );
 
-int bp_decode(int *LLRin, char *LLRout);
-int bp_decode(vec& softbits, char *LLRout);		//!< Maximum number of iterations
-int bp_decode(double* softbits, char *LLRout);		//!< Maximum number of iterations
+int bp_decode(int *LLRin, char *LLRout, int code_rate);
+int bp_decode(vec& softbits, char *LLRout, int code_rate);		//!< Maximum number of iterations
+int bp_decode(double* softbits, char *LLRout, int code_rate);		//!< Maximum number of iterations
 
 public:
-	int get_nvar() const { return nvar; }
-	int get_ncheck() const { return ncheck; }
-	int get_ninfo() const { return nvar - ncheck; }
-	float get_rate();
+	
 
 protected:
 	int *LLRin; char *LLRout;
-	int nvar, ncheck;
-	int nmaxX1, nmaxX2; // max(sumX1) max(sumX2)
-	int* V, * sumX1, * sumX2, * iind, * jind;	// Parity check matrix parameterization
-	int* mvc; int* mcv;	// temporary storage for decoder (memory allocated when codec defined)
-	short int Dint1, Dint2, Dint3;	//! Decoder (lookup-table) parameters
-	int* logexp_table;		//! The lookup tables for the decoder
+
+	LDPCFactory	m_ldpcPool;
+	LDPC_DATA	*m_ldpcCurrent;
+
 	bool psc;			//!< check syndrom after each iteration
 	int max_iters;
-
-	float rateldpc;
-	LDPC_Code ldpc;
 };

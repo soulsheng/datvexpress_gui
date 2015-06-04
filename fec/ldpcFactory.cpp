@@ -76,7 +76,7 @@ LDPC_DATA::LDPC_DATA( int code_rate )
 	int nminI = min(ldpc.iind._data(), ldpc.iind.size());
 	int nminJ = min(ldpc.jind._data(), ldpc.jind.size());
 
-#if 1
+#if 0
 	cout << "max(iind) = " << nmaxI << endl;// max(iind) = nvar*nmaxX1-1
 	cout << "max(jind) = " << nmaxJ << endl;// max(jind) = nvar*nmaxX1-1
 	cout << "min(iind) = " << nminI << endl;// min(iind) = 0
