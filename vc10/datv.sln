@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datv", "datv.vcxproj", "{3C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dvbs2-enc", "dvbs2-enc.vcxproj", "{DA10B8A4-63DC-4513-B47B-5DFAC320613D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dvbs2-dec", "dvbs2-dec.vcxproj", "{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,12 @@ Global
 		{DA10B8A4-63DC-4513-B47B-5DFAC320613D}.Release|Win32.ActiveCfg = Release|Win32
 		{DA10B8A4-63DC-4513-B47B-5DFAC320613D}.Release|Win32.Build.0 = Release|Win32
 		{DA10B8A4-63DC-4513-B47B-5DFAC320613D}.Release|x64.ActiveCfg = Release|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Debug|Win32.Build.0 = Debug|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Debug|x64.ActiveCfg = Debug|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Release|Win32.ActiveCfg = Release|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Release|Win32.Build.0 = Release|Win32
+		{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

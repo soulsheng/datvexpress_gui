@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8199C0E2-F3DF-4617-A086-C6CAC84AD03C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>dvbs2enc</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
+    <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>itpp_debug.lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <CodeGeneration>compute_20,sm_20</CodeGeneration>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\DVB-S2\DVB2.cpp" />
+    <ClCompile Include="..\DVB-S2\dvb2_bbheader.cpp" />
+    <ClCompile Include="..\DVB-S2\dvb2_bch.cpp" />
+    <ClCompile Include="..\DVB-S2\dvb2_ldpc_encode.cpp" />
+    <ClCompile Include="..\DVB-S2\dvb2_ldpc_tables.cpp" />
+    <ClCompile Include="..\DVB-S2\dvb2_scrambler.cpp" />
+    <ClCompile Include="..\DVB-S2\DVBS2-decode.cpp" />
+    <ClCompile Include="..\DVB-S2\DVBS2.cpp" />
+    <ClCompile Include="..\DVB-S2\dvbs2_interleave.cpp" />
+    <ClCompile Include="..\DVB-S2\dvbs2_modulator.cpp" />
+    <ClCompile Include="..\DVB-S2\dvbs2_physical.cpp" />
+    <ClCompile Include="..\DVB-S2\dvbs2_scrambler.cpp" />
+    <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
+    <ClCompile Include="..\fec\bch_bm.cpp" />
+    <ClCompile Include="..\fec\dvbUtility.cpp" />
+    <ClCompile Include="..\fec\ldpcFactory.cpp" />
+    <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
+    <ClCompile Include="..\fec\modulatorFactory.cpp" />
+    <ClCompile Include="mainDec.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DVB-S2\DVB2.h" />
+    <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
+    <ClInclude Include="..\DVB-S2\DVBS2.h" />
+    <ClInclude Include="..\fec\bch_bm.h" />
+    <ClInclude Include="..\fec\dvbUtility.h" />
+    <ClInclude Include="..\fec\helper_timer.h" />
+    <ClInclude Include="..\fec\ldpcFactory.h" />
+    <ClInclude Include="..\fec\ldpc_bp_decode.h" />
+    <ClInclude Include="..\fec\modulatorDefinition.h" />
+    <ClInclude Include="..\fec\modulatorFactory.h" />
+    <ClInclude Include="..\Sources\dvb_types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <None Include="..\fec\ldpc_bp_decode.cuh" />
+    <None Include="..\fec\ldpc_bp_decode_kernel.cuh" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
+  </ImportGroup>
+</Project>
