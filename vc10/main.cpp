@@ -84,10 +84,10 @@ void main()
 		printf("pl[%d]: %hd, %hd \n", pos/2, pl[pos/2].re, pl[pos/2].im );
 	}
 
+	print( pBuffer, PACKET_SIZE );
 
 #endif
 
-	print( pBuffer, PACKET_SIZE );
 	print( pl, PACKET_SIZE );
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
