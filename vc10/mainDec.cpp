@@ -42,20 +42,6 @@ void main()
 
 	fclose( fp2 );
 
-	int position[10];
-	int nCan = findHeader( pBuffer, FRAME_SIZE_NORMAL*2, position );
-	printf( "\n candidate count: %d \n", nCan );
-	for( int i=0; i<nCan; i++ ) {
-		int pos = position[i];
-		printf( "\n frame header position is: pl[%d] = (%hd, %hd, %hd) \n", 
-			pos, pBuffer[pos-1], pBuffer[pos], pBuffer[pos+1] );
-		print( pBuffer, PACKET_SIZE, pos );
-		printf("pl[%d]: %hd, %hd \n", pos/2, pl[pos/2].re, pl[pos/2].im );
-	}
-
-	print( pBuffer, PACKET_SIZE );
-
-
 	print( pl, PACKET_SIZE );
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
