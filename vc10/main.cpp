@@ -10,6 +10,8 @@
 #define VALUE_DIFF		60
 
 #define DATA_FILE_NAME	"D:\\file\\data\\ldpc\\data_long\\s31.1_16apsk_34_long.dat"
+#define DATA_FILE_NAME_ENC	"../data/s31.1_32apsk_34_long.dat"
+
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n, int nstart = 0);	// output encoded info
 template<typename T>
@@ -24,7 +26,7 @@ void main()
 	scmplx pl[FRAME_SIZE_NORMAL];
 	short  pBuffer[FRAME_SIZE_NORMAL*2];
 	printf("%d,%d,%d \n", sizeof(long), sizeof(int), sizeof(short) );
-#if DATA_FROM_ENC
+
 	DVBS2*	m_dvbs2 = new DVBS2;
 	DVB2FrameFormat	dvbs2_fmt;
 	//
@@ -62,41 +64,26 @@ void main()
 		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);
 
 	delete	m_dvbs2;
-#else
-	FILE *fp = fopen( DATA_FILE_NAME, "rb" );
+
+	FILE *fp = fopen( DATA_FILE_NAME_ENC, "wb" );
 	if( fp )
 	{
-		fread( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp );
-		memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, pBuffer,
-			sizeof(short)*FRAME_SIZE_NORMAL*2 );
+		memcpy_s(  pBuffer,	sizeof(short)*FRAME_SIZE_NORMAL*2, 
+			pl, sizeof(scmplx)*FRAME_SIZE_NORMAL );
+
+		fwrite( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp );
+
+		fclose( fp );
 	}
 	else
 		printf("failed to open file %s \n",DATA_FILE_NAME );
 
-	int position[10];
-	int nCan = findHeader( pBuffer, FRAME_SIZE_NORMAL*2, position );
-	printf( "\n candidate count: %d \n", nCan );
-	for( int i=0; i<nCan; i++ ) {
-		int pos = position[i];
-		printf( "\n frame header position is: pl[%d] = (%hd, %hd, %hd) \n", 
-			pos, pBuffer[pos-1], pBuffer[pos], pBuffer[pos+1] );
-		print( pBuffer, PACKET_SIZE, pos );
-		printf("pl[%d]: %hd, %hd \n", pos/2, pl[pos/2].re, pl[pos/2].im );
-	}
-
-	print( pBuffer, PACKET_SIZE );
-
-#endif
 
 	print( pl, PACKET_SIZE );
 
-	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
-	m_dvbs2_dec->initialize();
+	printf("pl_symbol(90): \n");
+	print( pl, PACKET_SIZE, 90 );
 
-	m_dvbs2_dec->s2_decode_ts_frame( pl );
-
-	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
-	delete	m_dvbs2_dec;
 }
 
 void init(u8* buffer, int n)	// initialize info

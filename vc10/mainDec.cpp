@@ -1,6 +1,7 @@
 
 #include "DVBS2.h"
 #include "DVBS2-decode.h"
+#include "helper_timer.h"
 
 #define PACKET_NUMBER	100
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
@@ -10,6 +11,8 @@
 #define VALUE_DIFF		60
 
 #define DATA_FILE_NAME	"D:\\file\\data\\ldpc\\data_long\\s31.1_16apsk_34_long.dat"
+#define DATA_FILE_NAME_ENC	"../data/s31.1_32apsk_34_long.dat"
+
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n, int nstart = 0);	// output encoded info
 template<typename T>
@@ -24,54 +27,20 @@ void main()
 	scmplx pl[FRAME_SIZE_NORMAL];
 	short  pBuffer[FRAME_SIZE_NORMAL*2];
 	printf("%d,%d,%d \n", sizeof(long), sizeof(int), sizeof(short) );
-#if DATA_FROM_ENC
-	DVBS2*	m_dvbs2 = new DVBS2;
-	DVB2FrameFormat	dvbs2_fmt;
-	//
-	// DVB-S2
-	//
-	dvbs2_fmt.frame_type    = FRAME_NORMAL;
-	dvbs2_fmt.code_rate     = CR_3_4;
-	dvbs2_fmt.constellation = M_32APSK;
-	dvbs2_fmt.roll_off      = RO_0_35;
-	dvbs2_fmt.pilots        = 0;
-	dvbs2_fmt.dummy_frame   = 0;
-	dvbs2_fmt.null_deletion = 0;
-	int nStatus = m_dvbs2->s2_set_configure( &dvbs2_fmt );
-	if( -1 == nStatus )
+
+
+
+	FILE *fp2 = fopen( DATA_FILE_NAME_ENC, "rb" );
+	if( fp2 )
 	{
-		printf(" mode(%d, %d) is invalid ! \n",
-			dvbs2_fmt.constellation, dvbs2_fmt.code_rate );
-
-		delete	m_dvbs2;
-
-		return ;
-	}
-
-	u8 b[PACKET_STREAM], bRef[PACKET_STREAM];
-	init( b, PACKET_STREAM );
-	print( b, PACKET_STREAM );
-
-	for (int i=0;i<PACKET_NUMBER;i++)
-	{
-		if( m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE ) )
-			break;
-	}
-
-	memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
-		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);
-
-	delete	m_dvbs2;
-#else
-	FILE *fp = fopen( DATA_FILE_NAME, "rb" );
-	if( fp )
-	{
-		fread( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp );
+		fread( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp2 );
 		memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, pBuffer,
 			sizeof(short)*FRAME_SIZE_NORMAL*2 );
 	}
 	else
 		printf("failed to open file %s \n",DATA_FILE_NAME );
+
+	fclose( fp2 );
 
 	int position[10];
 	int nCan = findHeader( pBuffer, FRAME_SIZE_NORMAL*2, position );
@@ -86,14 +55,26 @@ void main()
 
 	print( pBuffer, PACKET_SIZE );
 
-#endif
 
 	print( pl, PACKET_SIZE );
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	m_dvbs2_dec->initialize();
 
+
+	StopWatchInterface	*timerStep;
+	sdkCreateTimer( &timerStep );
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
 	m_dvbs2_dec->s2_decode_ts_frame( pl );
+
+	sdkStopTimer( &timerStep );
+	float fTime =sdkGetTimerValue( &timerStep ) ;
+	int nBit = 64800;
+
+	printf("decode time : %f \n", fTime );
+	printf("decode speed : %f \n", 64800/fTime/5 );
 
 	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
 	delete	m_dvbs2_dec;
