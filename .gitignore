@@ -6,3 +6,11 @@
 /vc10/Debug
 /vc10/*.suo
 /3rd/lib/*.lib
+/data/*.it
+/vc10/*.dat
+/*.lnk
+/data/*.dat
+/data/*.alist
+/vc10/*.lnk
+/vc10/fec/*.deps
+/vc10/*.pdb
