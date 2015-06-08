@@ -1,9 +1,9 @@
 
 #include "ldpcFactory.h"
 #include "dvbUtility.h"
-
+#if USE_GPU
 #include <cuda_runtime.h>
-
+#endif
 char	g_filename_it[CODE_RATE_COUNT][50] ={
 "../data/dvbs2_r14.it",
 "../data/dvbs2_r13.it",
@@ -221,7 +221,7 @@ LDPC_DATA_GPU::LDPC_DATA_GPU( LDPC_Code* pCode )
 
 	this->h_V = ldpc.V._data();
 	this->h_sumX2 = ldpc.sumX2._data();
-
+#if USE_GPU
 	cudaMalloc( (void**)&d_sumX1, nvar * sizeof(int) );		// const 64 K
 	cudaMemcpy( d_sumX1, ldpc.sumX1._data(), nvar * sizeof(int), cudaMemcpyHostToDevice );
 
@@ -245,12 +245,12 @@ LDPC_DATA_GPU::LDPC_DATA_GPU( LDPC_Code* pCode )
 
 	cudaMalloc( (void**)&d_logexp_table, Dint2 * sizeof(int) );		// const 1.2 K
 	cudaMemcpy( d_logexp_table, ldpc.llrcalc.logexp_table._data(), Dint2 * sizeof(int), cudaMemcpyHostToDevice );
-
+#endif
 }
 
 LDPC_DATA_GPU::~LDPC_DATA_GPU()
 {
-
+#if USE_GPU
 	cudaFree( d_sumX1 );	cudaFree( d_sumX2 );
 
 	cudaFree( d_iind );		cudaFree( d_jind );
@@ -259,5 +259,5 @@ LDPC_DATA_GPU::~LDPC_DATA_GPU()
 	cudaFree( d_mcv );		cudaFree( d_mvc );
 
 	cudaFree( d_logexp_table );	
-
+#endif
 }

@@ -7,7 +7,10 @@
 #include "ldpc_bp_decode.h"
 #include "modulatorFactory.h"
 #include "bch_bm.h"
+
+#if USE_GPU
 #include "ldpc_bp_decode.cuh"
+#endif
 
 #define PACKET_SIZE		188
 
@@ -64,7 +67,9 @@ private:
 	ModulatorFactory	mods;	// 调制解调器件库
 	BCH_BM	bch;
 
+#if USE_GPU
 	ldpc_gpu	ldpc_gpu;
+#endif
 	bool	m_bUseGPU;
 
 	LDPC_CodeFactory	m_codes;
