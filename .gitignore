@@ -14,3 +14,4 @@
 /vc10/*.lnk
 /vc10/fec/*.deps
 /vc10/*.pdb
+/vc10/Release
