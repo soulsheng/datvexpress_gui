@@ -57,10 +57,11 @@ void main()
 
 	sdkStopTimer( &timerStep );
 	float fTime =sdkGetTimerValue( &timerStep ) ;
-	int nBit = 64800;
+	
+	int nSymbol = m_dvbs2_dec->s2_get_n_symbol();
 
 	printf("decode time : %f \n", fTime );	// 27 ms, 529(d)
-	printf("decode speed : %f \n", 64800/fTime/5 );
+	printf("decode speed : %f MBd/s \n", nSymbol/fTime * 0.001f );
 
 	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
 	delete	m_dvbs2_dec;
