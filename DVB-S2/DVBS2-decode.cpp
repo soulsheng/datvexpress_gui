@@ -1,9 +1,19 @@
 
 #include "DVBS2-decode.h"
 #include "dvbUtility.h"
+#include "helper_timer.h"
+#define		TIME_STEP		6	
 
 int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 {
+	vec			timerStepValue(TIME_STEP);
+
+	int nTimeStep = 0;
+	StopWatchInterface	*timerStep;
+
+	sdkCreateTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
 	memcpy_s( this->m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
 		pl, sizeof(scmplx)*FRAME_SIZE_NORMAL);
 
@@ -17,20 +27,41 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	// Now apply the scrambler to the data part not the header
 	pl_scramble_decode( &m_pl[90], m_payload_symbols );
 
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 1.2 ms
+
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
 	// decode the data
 	if( !m_bDecodeSoft )
 	{
 		res = s2_demodulate_hard();
 
-		// de-Interleave and pack
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 1.6 ms, 16(d)
+
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
+
+		// de-Interleave and pack	
 		if( m_bInterleave )
 			s2_deinterleave();
 		else
 			s2_i2b();
+
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.2 ms
 	}
 	else
 	{
 		demodulate_soft_bits( &m_pl[90], N0, m_soft_bits_cache );
+
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 12 ms, 490(d)
+
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
 
 		if( m_bInterleave )
 			reorder_softbit();
@@ -38,11 +69,29 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 			memcpy_s( m_soft_bits, sizeof(double)*FRAME_SIZE_NORMAL,
 			m_soft_bits_cache, sizeof(double)*FRAME_SIZE_NORMAL );
 
-		ldpc_decode();
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.2 ms
+
 	}
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
+	ldpc_decode();// 3.8 ms, 20(d)	//cpp 78(d) 
+
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
+
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
 
 	// BCH encode the BB Frame
 	bch_decode();
+
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 10 ms, 16(d)
+
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
 
 	// Yes so now Scramble the BB frame
 	bb_randomise_decode();
@@ -55,8 +104,18 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	// Add a new transport packet
 	transport_packet_decode_crc( m_frame );
 
-	m_nTotalFrame++;
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.3ms
 
+	sdkDeleteTimer( &timerStep );
+
+	m_nTotalFrame++;
+#if 0
+	for (int i=0;i<TIME_STEP;i++)
+	{
+		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
+	}
+#endif
 	return res;
 }
 

@@ -59,7 +59,7 @@ void main()
 	float fTime =sdkGetTimerValue( &timerStep ) ;
 	int nBit = 64800;
 
-	printf("decode time : %f \n", fTime );
+	printf("decode time : %f \n", fTime );	// 27 ms, 529(d)
 	printf("decode speed : %f \n", 64800/fTime/5 );
 
 	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
