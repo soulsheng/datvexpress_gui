@@ -110,7 +110,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 0
+#if 1
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
@@ -729,7 +729,7 @@ void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bi
 		cAWGN._elem(i).imag( sym[i].im * 1.0/CP );
 	}
 
-	vec softbits = pModulator->demodulate_soft_bits(cAWGN, N0);
+	vec softbits = pModulator->demodulate_soft_bits(cAWGN, N0,APPROX);
 
 	convertVecToBuffer( soft_bits, softbits );
 }
