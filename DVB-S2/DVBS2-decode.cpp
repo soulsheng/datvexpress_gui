@@ -58,7 +58,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		demodulate_soft_bits( &m_pl[90], N0, m_soft_bits_cache );
 
 		sdkStopTimer( &timerStep );
-		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 12 ms, 490(d)
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 3.4,5.3 ms, 490(d)
 
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
@@ -719,7 +719,7 @@ unsigned char* DVBS2_DECODE::getByte()
 
 void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits )
 {
-
+#if 0
 	Modulator_2D* pModulator = mods.findModulator( m_format[0].constellation );
 
 	cvec	cAWGN( m_payload_symbols );
@@ -732,6 +732,74 @@ void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bi
 	vec softbits = pModulator->demodulate_soft_bits(cAWGN, N0,APPROX);
 
 	convertVecToBuffer( soft_bits, softbits );
+#else
+
+	scmplx*	pSymbolsTemplate = NULL;
+	int nSymbolSize = -1;
+	switch( m_format[0].constellation )
+	{
+	case M_QPSK:
+		pSymbolsTemplate = m_qpsk;
+		nSymbolSize = 1<<2;
+		break;
+	case M_8PSK:
+		pSymbolsTemplate = m_8psk;
+		nSymbolSize = 1<<3;
+		break;
+	case M_16APSK:
+		pSymbolsTemplate = m_16apsk;
+		nSymbolSize = 1<<4;
+		break;
+	case M_32APSK:
+		pSymbolsTemplate = m_32apsk;
+		nSymbolSize = 1<<5;
+		break;
+	default:
+		break;
+	}
+
+	float*	pDist = new float[nSymbolSize];
+
+	for (int l = 0; l < m_payload_symbols; l++) 
+	{
+		for (int j = 0; j < nSymbolSize; j++) 
+		{
+			pDist[j] = distance(sym[l], pSymbolsTemplate[j]);
+		}
+
+		double d0min, d1min, temp;
+
+		int k = m_format[0].constellation + 2;
+		for (int i = 0; i < k; i++) 
+		{
+			d0min = d1min = 1<<20;
+
+			for (int j = 0; j < nSymbolSize; j++) 
+			{
+				temp = pDist[j];
+				if ( j&(1<<(k-i-1)) )
+				{
+					if (temp < d1min) 
+					{ 
+						d1min = temp; 
+					}
+				}
+				else
+				{
+					if (temp < d0min) 
+					{ 
+						d0min = temp; 
+					}
+				}
+			}
+
+			soft_bits[l*k + i] = (-d0min + d1min) / N0;
+
+		}
+	}
+
+	delete[]	pDist;
+#endif
 }
 
 float DVBS2_DECODE::get_rate()
