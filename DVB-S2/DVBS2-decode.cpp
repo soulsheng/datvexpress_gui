@@ -110,7 +110,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 1
+#if 0
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
