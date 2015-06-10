@@ -2,7 +2,7 @@
 #include "DVBS2-decode.h"
 #include "dvbUtility.h"
 #include "helper_timer.h"
-#define		TIME_STEP		6	
+#define		TIME_STEP		4	
 
 int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 {
@@ -55,6 +55,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	}
 	else
 	{
+#if 0
 		demodulate_soft_bits( &m_pl[90], N0, m_soft_bits_cache );
 
 		sdkStopTimer( &timerStep );
@@ -72,14 +73,21 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.2 ms
 
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
+
+		ldpc_decode();// 3.8 ms, 20(d)	//cpp 78(d) 
+
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
+#else
+
+		decode_soft( &m_pl[90], N0 );
+
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.2 ms
+#endif
 	}
-	sdkResetTimer( &timerStep );
-	sdkStartTimer( &timerStep );
-
-	ldpc_decode();// 3.8 ms, 20(d)	//cpp 78(d) 
-
-	sdkStopTimer( &timerStep );
-	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
 
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
@@ -110,7 +118,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 0
+#if 1
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
@@ -866,4 +874,69 @@ void DVBS2_DECODE::reorder_softbit()
 			m_soft_bits[j*rows+i] = m_soft_bits_cache[i*nConstellationType+j];	
 
 	return;
+}
+
+void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
+{
+	// step	1:	inverse map constellation
+	float	pDist[32];
+
+	for (int l = 0; l < m_payload_symbols; l++) 
+	{
+		for (int j = 0; j < nSymbolSize; j++) 
+		{
+			pDist[j] = distance(sym[l], pSymbolsTemplate[j]);
+		}
+
+		double d0min, d1min, temp;
+
+		int k = m_format[0].constellation + 2;
+		for (int i = 0; i < k; i++) 
+		{
+			d0min = d1min = 1<<20;
+
+			for (int j = 0; j < nSymbolSize; j++) 
+			{
+				temp = pDist[j];
+				if ( j&(1<<(k-i-1)) )
+				{
+					if (temp < d1min) 
+					{ 
+						d1min = temp; 
+					}
+				}
+				else
+				{
+					if (temp < d0min) 
+					{ 
+						d0min = temp; 
+					}
+				}
+			}
+
+			m_soft_bits_cache[l*k + i] = (-d0min + d1min) / N0;
+
+		}
+	}
+
+	// step	2:	de-interleave
+	int rows=0;
+
+	int frame_size = m_format[0].nldpc;
+
+	int nConstellationType = m_format[0].constellation + 2;
+	rows = frame_size / nConstellationType;
+
+	for (int j=0;j<nConstellationType;j++)
+		for( int i = 0; i < rows; i++ )
+			m_soft_bits[j*rows+i] = m_soft_bits_cache[i*nConstellationType+j];	
+
+	// step	3:	ldpc decode
+	ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
+
+	// step	4:	cast type, char -> int
+	for( int i = 0; i < rows; i++ )
+		for (int j=0;j<nConstellationType;j++)
+			m_frame[i*nConstellationType+j] = m_bitLDPC[i*nConstellationType+j];
+
 }

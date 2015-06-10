@@ -52,6 +52,7 @@ protected:
 	void set_configure();
 	void demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits );
 	float get_rate();
+	void decode_soft( scmplx* sym, double N0 );
 
 private:
 	u8	msg[FRAME_SIZE_NORMAL/8];
