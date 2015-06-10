@@ -73,6 +73,10 @@ private:
 	bool	m_bUseGPU;
 
 	LDPC_CodeFactory	m_codes;
+
+	scmplx*	pSymbolsTemplate ;
+	int nSymbolSize ;
+
 };
 
 #endif

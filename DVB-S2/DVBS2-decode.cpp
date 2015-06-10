@@ -606,6 +606,9 @@ DVBS2_DECODE::DVBS2_DECODE()
 	m_bDecodeSoft = true;
 
 	m_bUseGPU = true;
+	
+	pSymbolsTemplate = NULL;
+	nSymbolSize = -1;
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -734,31 +737,7 @@ void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bi
 	convertVecToBuffer( soft_bits, softbits );
 #else
 
-	scmplx*	pSymbolsTemplate = NULL;
-	int nSymbolSize = -1;
-	switch( m_format[0].constellation )
-	{
-	case M_QPSK:
-		pSymbolsTemplate = m_qpsk;
-		nSymbolSize = 1<<2;
-		break;
-	case M_8PSK:
-		pSymbolsTemplate = m_8psk;
-		nSymbolSize = 1<<3;
-		break;
-	case M_16APSK:
-		pSymbolsTemplate = m_16apsk;
-		nSymbolSize = 1<<4;
-		break;
-	case M_32APSK:
-		pSymbolsTemplate = m_32apsk;
-		nSymbolSize = 1<<5;
-		break;
-	default:
-		break;
-	}
-
-	float*	pDist = new float[nSymbolSize];
+	float	pDist[32];
 
 	for (int l = 0; l < m_payload_symbols; l++) 
 	{
@@ -798,7 +777,6 @@ void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bi
 		}
 	}
 
-	delete[]	pDist;
 #endif
 }
 
@@ -817,19 +795,24 @@ void DVBS2_DECODE::set_configure()
 
 	// m_payload_symbols
 	int frame_size = m_format[0].nldpc;
-	switch( m_format[0].constellation )
+
+	int conste_type = m_format[0].constellation;
+	m_payload_symbols = frame_size / (conste_type + 2 );
+	nSymbolSize = 1<<(conste_type + 2 );
+
+	switch( conste_type )
 	{
 	case M_QPSK:
-		m_payload_symbols = frame_size / 2;
+		pSymbolsTemplate = m_qpsk;
 		break;
 	case M_8PSK:
-		m_payload_symbols = frame_size / 3;
+		pSymbolsTemplate = m_8psk;
 		break;
 	case M_16APSK:
-		m_payload_symbols = frame_size / 4;
+		pSymbolsTemplate = m_16apsk;
 		break;
 	case M_32APSK:
-		m_payload_symbols = frame_size / 5;
+		pSymbolsTemplate = m_32apsk;
 		break;
 	default:
 		break;
