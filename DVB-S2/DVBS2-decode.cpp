@@ -751,7 +751,7 @@ void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bi
 	{
 		for (int j = 0; j < nSymbolSize; j++) 
 		{
-			pDist[j] = distance(sym[l], pSymbolsTemplate[j]);
+			pDist[j] = distance(sym[l], pSymbolsTemplate[j])* 1.0f /CP/CP;
 		}
 
 		double d0min, d1min, temp;
@@ -885,7 +885,7 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 	{
 		for (int j = 0; j < nSymbolSize; j++) 
 		{
-			pDist[j] = distance(sym[l], pSymbolsTemplate[j]);
+			pDist[j] = distance(sym[l], pSymbolsTemplate[j])* 1.0f /CP/CP;
 		}
 
 		double d0min, d1min, temp;
@@ -932,7 +932,9 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 			m_soft_bits[j*rows+i] = m_soft_bits_cache[i*nConstellationType+j];	
 
 	// step	3:	ldpc decode
+#if USE_GPU
 	ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
+#endif
 
 	// step	4:	cast type, char -> int
 	for( int i = 0; i < rows; i++ )
