@@ -3,6 +3,7 @@
 #include <itpp/itcomm.h>
 
 #include "ldpcFactory.h"
+#include "dvb_types.h"
 
 class ldpc_gpu
 {
@@ -35,6 +36,13 @@ int bp_decode_once(int *LLRin, char *LLRout, int code_rate,
 int bp_decode_once(itpp::vec& softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 
+
+int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
+	int *pFrame, int code_rate, 
+	scmplx* pSymbolsTemplate, int nSymbolSize,
+	double* p_soft_bits, double* p_soft_bits_cache, 
+	char* p_bitLDPC );	
+
 	/*!
 	   * LDPC解码器初始化   *
 		* \param	nvar 	参数输入：变量节点数目，编码长度
@@ -55,6 +63,7 @@ int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximu
 
 private:
 	bool	release();
+	float	distance( const scmplx& cL, const scmplx& cR );
 
 private:
 	int* d_synd ;

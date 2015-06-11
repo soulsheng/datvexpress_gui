@@ -306,3 +306,77 @@ int ldpc_gpu::bp_decode_once( double* softbits, char *LLRout, int code_rate )
 	convertBufferToVec( softbits, softVec );
 	return bp_decode_once( softVec, LLRout, code_rate );
 }
+
+float ldpc_gpu::distance( const scmplx& cL, const scmplx& cR )
+{
+	float dist2 = 0;
+	dist2 = (float)(cL.im - cR.im) * (cL.im - cR.im) + (float)(cL.re - cR.re) * (cL.re - cR.re);
+	return dist2;
+}
+
+int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
+	int *pFrame, int code_rate, 
+	scmplx* pSymbolsTemplate, int nSymbolSize,
+	double* p_soft_bits, double* p_soft_bits_cache,
+	char* p_bitLDPC )
+{
+	m_ldpcCurrent = m_ldpcDataPool.findLDPC_DATA( code_rate );
+	nvar = m_ldpcCurrent->nvar;
+	ncheck = m_ldpcCurrent->ncheck;
+
+	// step	1:	inverse map constellation
+	float	pDist[32];
+
+	for (int l = 0; l < nPayloadSymbols; l++) 
+	{
+		for (int j = 0; j < nSymbolSize; j++) 
+		{
+			pDist[j] = distance(sym[l], pSymbolsTemplate[j])* 1.0f /CP/CP;
+		}
+
+		double d0min, d1min, temp;
+
+		for (int i = 0; i < k; i++) 
+		{
+			d0min = d1min = 1<<20;
+
+			for (int j = 0; j < nSymbolSize; j++) 
+			{
+				temp = pDist[j];
+				if ( j&(1<<(k-i-1)) )
+				{
+					if (temp < d1min) 
+					{ 
+						d1min = temp; 
+					}
+				}
+				else
+				{
+					if (temp < d0min) 
+					{ 
+						d0min = temp; 
+					}
+				}
+			}
+
+			p_soft_bits_cache[l*k + i] = (-d0min + d1min) / N0;
+
+		}
+	}
+
+	// step	2:	de-interleave
+	int rows = nvar / k;
+
+	for (int j=0;j<k;j++)
+		for( int i = 0; i < rows; i++ )
+			p_soft_bits[j*rows+i] = p_soft_bits_cache[i*k+j];	
+
+	// step	3:	ldpc decode
+	bp_decode_once( p_soft_bits, p_bitLDPC, code_rate );
+
+	// step	4:	cast type, char -> int
+	for( int i = 0; i < nvar; i++ )
+		pFrame[i] = p_bitLDPC[i];
+
+	return 0;
+}

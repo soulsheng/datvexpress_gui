@@ -2,7 +2,7 @@
 #include "DVBS2-decode.h"
 #include "dvbUtility.h"
 #include "helper_timer.h"
-#define		TIME_STEP		4	
+#define		TIME_STEP		6	
 
 int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 {
@@ -82,8 +82,13 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
 #else
 
+#if 0
 		decode_soft( &m_pl[90], N0 );
-
+#else	
+		ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, m_format[0].constellation + 2,
+			m_frame, m_format[0].code_rate, pSymbolsTemplate, nSymbolSize,
+			m_soft_bits, m_soft_bits_cache, m_bitLDPC );
+#endif
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.2 ms
 #endif
@@ -118,7 +123,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 1
+#if 0// cost time 0.7ms/cout 
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
