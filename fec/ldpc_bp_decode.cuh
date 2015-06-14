@@ -37,9 +37,8 @@ int bp_decode_once(itpp::vec& softbits, char *LLRout, int code_rate );		//!< Max
 int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 
 
-int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
+int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 	int *pFrame, int code_rate, 
-	scmplx* pSymbolsTemplate, int nSymbolSize,
 	double* p_soft_bits, double* p_soft_bits_cache, 
 	char* p_bitLDPC );	
 
@@ -57,7 +56,7 @@ int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
 		* \param	Dint1/2/3		参数输入：同对数似然比class LLR_calc_unit
 		* \param	logexp_table	参数输入：对数似然比查找表
 	*/
-	bool	initialize( LDPC_CodeFactory* pcodes );
+	bool	initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols );
 
 	~ldpc_gpu();
 
@@ -96,5 +95,15 @@ private:
 
 	LDPC_DataFactory_GPU	m_ldpcDataPool;
 	LDPC_DATA_GPU	*m_ldpcCurrent;
+
+	scmplx*	d_pSymbolsTemplate ;// [M_CONST_NUMBER][32]
+	scmplx*	d_pSymbolsIn;		// [FRAME_SIZE_NORMAL]
+	float*	d_pDist2 ;			// [FRAME_SIZE_NORMAL][32]
+
+	scmplx*	m_pSymbolsTemplate ;// [M_CONST_NUMBER][32]
+	float*	m_pDist2 ;			// [FRAME_SIZE_NORMAL][32]
+
+	double*	d_pSoftBit ;		// [FRAME_SIZE_NORMAL]
+	double*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
 
 };

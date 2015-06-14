@@ -419,3 +419,63 @@ void updateVariableNodeOpti2D_kernel( const int nvar, const int ncheck, const in
 	__syncthreads();
 
 }
+
+__global__
+void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2, 
+	int scale)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	scmplx symIn = sym[i];
+
+	for (int j = 0; j < M; j++) 
+	{
+		scmplx symTp = symTemplate[j];
+
+		double dist2Val = (symIn.re*1.0f - symTp.re) * (symIn.re - symTp.re) 
+			+ (symIn.im*1.0f - symTp.im) * (symIn.im - symTp.im);
+
+		dist2Val /= scale*scale;
+
+		dist2[i*M+j] = dist2Val;
+
+	}
+}
+
+
+#if 1
+__global__
+void soft_bit_kernel(float *m_pDist2, double *p_soft_bits_cache, int k, int M, float N0)
+{
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+
+	double d0min, d1min, temp;
+
+		for (int i = 0; i < k; i++) 
+		{
+			d0min = d1min = 1<<20;
+
+			for (int j = 0; j < M; j++) 
+			{
+				temp = m_pDist2[index*M+j];
+				if ( j&(1<<(k-i-1)) )
+				{
+					if (temp < d1min) 
+					{ 
+						d1min = temp; 
+					}
+				}
+				else
+				{
+					if (temp < d0min) 
+					{ 
+						d0min = temp; 
+					}
+				}
+			}
+
+			p_soft_bits_cache[index*k + i] = (-d0min + d1min) / N0;
+
+		}
+}
+#endif

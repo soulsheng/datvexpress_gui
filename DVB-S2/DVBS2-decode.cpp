@@ -85,8 +85,8 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 #if 0
 		decode_soft( &m_pl[90], N0 );
 #else	
-		ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, m_format[0].constellation + 2,
-			m_frame, m_format[0].code_rate, pSymbolsTemplate, nSymbolSize,
+		ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
+			m_frame, m_format[0].code_rate,
 			m_soft_bits, m_soft_bits_cache, m_bitLDPC );
 #endif
 		sdkStopTimer( &timerStep );
@@ -833,6 +833,11 @@ void DVBS2_DECODE::set_configure()
 
 	bch.setCode( m_format[0].code_rate, m_format[0].frame_type );
 
+	memcpy_s( m_Symbols[M_QPSK], 60*sizeof(scmplx), m_qpsk, 4*sizeof(scmplx) );
+	memcpy_s( m_Symbols[M_8PSK], 60*sizeof(scmplx), m_8psk, 8*sizeof(scmplx) );
+	memcpy_s( m_Symbols[M_16APSK], 60*sizeof(scmplx), m_16apsk, 16*sizeof(scmplx) );
+	memcpy_s( m_Symbols[M_32APSK], 60*sizeof(scmplx), m_32apsk, 32*sizeof(scmplx) );
+
 }
 
 void DVBS2_DECODE::initialize()
@@ -843,7 +848,7 @@ void DVBS2_DECODE::initialize()
 
 	bch.initialize();
 #if USE_GPU
-	ldpc_gpu.initialize(&m_codes);
+	ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0]);
 #endif
 }
 

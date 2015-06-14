@@ -78,6 +78,8 @@ private:
 	scmplx*	pSymbolsTemplate ;
 	int nSymbolSize ;
 
+	scmplx	m_Symbols[M_CONST_NUMBER][32] ;
+
 };
 
 #endif

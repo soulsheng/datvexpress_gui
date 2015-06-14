@@ -224,7 +224,7 @@ bool ldpc_gpu::check_parity_cpu(char *LLR)
 	return true;   // codeword is valid
 }
 
-bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes )
+bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols )
 {
 
 	m_ldpcDataPool.initialize( pcodes );
@@ -242,6 +242,18 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes )
 	cudaMalloc( (void**)&d_synd, 1 * sizeof(int) );
 	cudaMemset( d_synd, 0, 1 * sizeof(int) );
 	
+	cudaMalloc( (void**)&d_pSymbolsTemplate, 32 * M_CONST_NUMBER * sizeof(scmplx) );
+	cudaMemcpy( d_pSymbolsTemplate, psymbols, 32 * M_CONST_NUMBER * sizeof(scmplx), cudaMemcpyHostToDevice );
+	m_pSymbolsTemplate = psymbols;
+
+	cudaMalloc( (void**)&d_pSymbolsIn, FRAME_SIZE_NORMAL * sizeof(scmplx) );
+
+	cudaMalloc( (void**)&d_pDist2, 32 * FRAME_SIZE_NORMAL * sizeof(float) );
+
+	cudaMalloc( (void**)&d_pSoftBit, FRAME_SIZE_NORMAL * sizeof(double) );
+	cudaMalloc( (void**)&d_pSoftBitCache, FRAME_SIZE_NORMAL * sizeof(double) );
+
+	m_pDist2 = new float[FRAME_SIZE_NORMAL*32];
 
 	initConstantMemoryLogExp(m_ldpcCurrent->getCode()->llrcalc.logexp_table._data());
 
@@ -277,7 +289,13 @@ bool ldpc_gpu::release()
 	
 	cudaFree( d_synd );
 
+	cudaFree( d_pSymbolsTemplate );
+
+	cudaFree( d_pDist2 );
+
 	free( h_mvc );	free( h_mcv );
+
+	free( m_pDist2 );
 
 	return true;
 }
@@ -314,9 +332,8 @@ float ldpc_gpu::distance( const scmplx& cL, const scmplx& cR )
 	return dist2;
 }
 
-int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
-	int *pFrame, int code_rate, 
-	scmplx* pSymbolsTemplate, int nSymbolSize,
+int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
+	int *pFrame, int code_rate,
 	double* p_soft_bits, double* p_soft_bits_cache,
 	char* p_bitLDPC )
 {
@@ -325,44 +342,19 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int k,
 	ncheck = m_ldpcCurrent->ncheck;
 
 	// step	1:	inverse map constellation
-	float	pDist[32];
+	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );
+	cudaMemcpy( d_pSymbolsTemplate, m_pSymbolsTemplate, 32 * M_CONST_NUMBER * sizeof(scmplx), cudaMemcpyHostToDevice );
 
-	for (int l = 0; l < nPayloadSymbols; l++) 
-	{
-		for (int j = 0; j < nSymbolSize; j++) 
-		{
-			pDist[j] = distance(sym[l], pSymbolsTemplate[j])* 1.0f /CP/CP;
-		}
+	dim3 block( 256 );
+	dim3 grid;
+	grid.x = (nPayloadSymbols + 255)/256;
 
-		double d0min, d1min, temp;
+	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*32, M, d_pDist2, CP );
+	cudaMemcpy( m_pDist2, d_pDist2, nPayloadSymbols*M*sizeof(float), cudaMemcpyDeviceToHost );
 
-		for (int i = 0; i < k; i++) 
-		{
-			d0min = d1min = 1<<20;
+	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0);
+	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(double), cudaMemcpyDeviceToHost );
 
-			for (int j = 0; j < nSymbolSize; j++) 
-			{
-				temp = pDist[j];
-				if ( j&(1<<(k-i-1)) )
-				{
-					if (temp < d1min) 
-					{ 
-						d1min = temp; 
-					}
-				}
-				else
-				{
-					if (temp < d0min) 
-					{ 
-						d0min = temp; 
-					}
-				}
-			}
-
-			p_soft_bits_cache[l*k + i] = (-d0min + d1min) / N0;
-
-		}
-	}
 
 	// step	2:	de-interleave
 	int rows = nvar / k;
