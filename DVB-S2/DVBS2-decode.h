@@ -8,7 +8,7 @@
 #include "modulatorFactory.h"
 #include "bch_bm.h"
 
-#if USE_GPU
+#ifdef USE_GPU
 #include "ldpc_bp_decode.cuh"
 #endif
 
@@ -68,7 +68,7 @@ private:
 	ModulatorFactory	mods;	// 调制解调器件库
 	BCH_BM	bch;
 
-#if USE_GPU
+#ifdef USE_GPU
 	ldpc_gpu	ldpc_gpu;
 #endif
 	bool	m_bUseGPU;
