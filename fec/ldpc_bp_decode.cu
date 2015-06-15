@@ -358,7 +358,7 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 #if 1
 	block.y = k;
 	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols);
-	cudaMemcpy( p_soft_bits, d_LLRin, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
+	//cudaMemcpy( p_soft_bits, d_LLRin, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
 #else
 	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
 	for( int i = 0; i < nPayloadSymbols; i++ )
