@@ -10,6 +10,8 @@
 
 #include "bch_bm.h"
 
+#include "helper_timer.h"
+#define		TIME_STEP		6	
 
 int BCH_BM::lfsr(unsigned long int *seed)
 {
@@ -316,7 +318,7 @@ void BCH_BM::BerlMass( )
 			// roots inversion give the error locations
 			el[kk++] = (MAXN-i)%MAXN;
 
-	}
+	}// 2.4 ms 
 	
 
 
@@ -397,10 +399,32 @@ void BCH_BM::release()
 
 void BCH_BM::decode(  char* messageRecv, char* codeword )
 {
-	if( error_detection(codeword) ) {
+	float	timerStepValue[TIME_STEP];
+
+	int nTimeStep = 0;
+	StopWatchInterface	*timerStep;
+
+	sdkCreateTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
+	bool errCode = error_detection(codeword);// 7 ms
+
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
+
+	sdkResetTimer( &timerStep );
+	sdkStartTimer( &timerStep );
+
+	if( errCode ) {
 		fprintf(stdout,"Errors detected!\nDecoding by Berlekamp-Massey algorithm.....\n");
 
 		BerlMass();
+
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 3 ms
+
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
 
 		bool success = true;
 		fprintf(stdout,"\nPosition of errors detected:\n");
@@ -416,6 +440,12 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 		if(success) {
 		fprintf(stdout,"\nSuccessful decoding!\n----------------------\n");};
 		
+		sdkStopTimer( &timerStep );
+		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.8 ms
+
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
+
 	}
 	else
 		fprintf(stdout,"\n\nNo errors detected!\n------------------------------\n");
@@ -423,6 +453,15 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 
 	BCH_final_dec(messageRecv, codeword);
 
+	sdkStopTimer( &timerStep );
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.06 ms
+
+#if 1// cost time 0.7ms/cout 
+	for (int i=0;i<TIME_STEP;i++)
+	{
+		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
+	}
+#endif
 }
 
 void BCH_BM::setCode( int rate, int type )
