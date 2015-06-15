@@ -82,6 +82,9 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
 #else
 
+		sdkResetTimer( &timerStep );
+		sdkStartTimer( &timerStep );
+
 #if 0
 		decode_soft( &m_pl[90], N0 );
 #else	
@@ -837,6 +840,8 @@ void DVBS2_DECODE::set_configure()
 	memcpy_s( m_Symbols[M_8PSK], 60*sizeof(scmplx), m_8psk, 8*sizeof(scmplx) );
 	memcpy_s( m_Symbols[M_16APSK], 60*sizeof(scmplx), m_16apsk, 16*sizeof(scmplx) );
 	memcpy_s( m_Symbols[M_32APSK], 60*sizeof(scmplx), m_32apsk, 32*sizeof(scmplx) );
+	
+	ldpc_gpu.updateSymbolsTemplate( m_Symbols[0] );
 
 }
 

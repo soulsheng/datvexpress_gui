@@ -442,10 +442,30 @@ void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2,
 	}
 }
 
+__device__
+double to_double(int l, int Dint1) 
+{
+  return static_cast<double>(l) / (1 << Dint1);
+}
+
+__device__
+int to_qllr(double l, int Dint1, const int QLLR_MAX) 
+{
+  double QLLR_MAX_double = to_double(QLLR_MAX, Dint1);
+  // Don't abort when overflow occurs, just saturate the QLLR
+  if (l > QLLR_MAX_double) {
+    return QLLR_MAX;
+  }
+  if (l < -QLLR_MAX_double) {
+    return -QLLR_MAX;
+  }
+  return static_cast<int>(std::floor(0.5 + (1 << Dint1) * l));
+}
 
 #if 1
 __global__
-void soft_bit_kernel(float *m_pDist2, double *p_soft_bits_cache, int k, int M, float N0)
+void soft_bit_kernel(float *m_pDist2, int *p_soft_bits_cache, int k, int M, float N0, 
+	int Dint1, const int QLLR_MAX)
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -473,9 +493,19 @@ void soft_bit_kernel(float *m_pDist2, double *p_soft_bits_cache, int k, int M, f
 					}
 				}
 			}
-
-			p_soft_bits_cache[index*k + i] = (-d0min + d1min) / N0;
+			double l = (-d0min + d1min) / N0;
+			p_soft_bits_cache[index*k + i] = to_qllr( l, Dint1, QLLR_MAX );
 
 		}
 }
 #endif
+__global__
+void reorder_kernel(int *p_soft_bits, int *p_soft_bits_cache, int k, int nPayloadSymbols)
+{
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = threadIdx.y;
+	//for (int j = 0;j < k; j++) 
+	{
+		p_soft_bits[j*nPayloadSymbols+index] = p_soft_bits_cache[index*k+j];	
+	}
+}

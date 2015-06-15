@@ -30,7 +30,8 @@ int bp_decode(int *LLRin, int *LLRout,
 		* \param		psc	    参数输入：是否每次迭代都进行奇偶校验
 		* \param		max_iters 参数输入：最大迭代次数
 	*/
-int bp_decode_once(int *LLRin, char *LLRout, int code_rate, 
+int bp_decode_once(char *LLRout, int code_rate, 
+	int *LLRin = NULL, 
 	bool psc = true,			//!< check syndrom after each iteration
 	int max_iters = 50 );		//!< Maximum number of iterations
 int bp_decode_once(itpp::vec& softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
@@ -57,6 +58,7 @@ int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 		* \param	logexp_table	参数输入：对数似然比查找表
 	*/
 	bool	initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols );
+	void	updateSymbolsTemplate( scmplx* psymbols );
 
 	~ldpc_gpu();
 
@@ -103,7 +105,6 @@ private:
 	scmplx*	m_pSymbolsTemplate ;// [M_CONST_NUMBER][32]
 	float*	m_pDist2 ;			// [FRAME_SIZE_NORMAL][32]
 
-	double*	d_pSoftBit ;		// [FRAME_SIZE_NORMAL]
-	double*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
+	int*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
 
 };

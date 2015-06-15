@@ -102,7 +102,8 @@ int ldpc_gpu::bp_decode(int *LLRin, int *LLRout,
   return (is_valid_codeword ? iter : -iter);
 }
 
-int ldpc_gpu::bp_decode_once(int *LLRin, char *LLRout, int code_rate, 
+int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate, 
+	int *LLRin/*= NULL*/, 
 	bool psc /*= true*/,			//!< check syndrom after each iteration
 	int max_iters /*= 50*/ )		//!< Maximum number of iterations
 {
@@ -110,6 +111,7 @@ int ldpc_gpu::bp_decode_once(int *LLRin, char *LLRout, int code_rate,
 	nvar = m_ldpcCurrent->nvar;
 	ncheck = m_ldpcCurrent->ncheck;
 
+	if( LLRin )
 	cudaMemcpy( d_LLRin, LLRin, nvar * sizeof(int), cudaMemcpyHostToDevice );
 
  	dim3 block( SIZE_BLOCK );
@@ -250,8 +252,7 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols )
 
 	cudaMalloc( (void**)&d_pDist2, 32 * FRAME_SIZE_NORMAL * sizeof(float) );
 
-	cudaMalloc( (void**)&d_pSoftBit, FRAME_SIZE_NORMAL * sizeof(double) );
-	cudaMalloc( (void**)&d_pSoftBitCache, FRAME_SIZE_NORMAL * sizeof(double) );
+	cudaMalloc( (void**)&d_pSoftBitCache, FRAME_SIZE_NORMAL * sizeof(int) );
 
 	m_pDist2 = new float[FRAME_SIZE_NORMAL*32];
 
@@ -312,7 +313,7 @@ int ldpc_gpu::bp_decode_once( itpp::vec& softbits, char *LLRout, int code_rate )
 	ncheck = m_ldpcCurrent->ncheck;
 	itpp::QLLRvec llrIn = m_ldpcCurrent->getCode()->get_llrcalc().to_qllr(softbits);
 
-	return bp_decode_once( llrIn._data(), LLRout, code_rate );	
+	return bp_decode_once( LLRout, code_rate, llrIn._data() );	
 }
 
 int ldpc_gpu::bp_decode_once( double* softbits, char *LLRout, int code_rate )
@@ -343,32 +344,39 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 
 	// step	1:	inverse map constellation
 	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );
-	cudaMemcpy( d_pSymbolsTemplate, m_pSymbolsTemplate, 32 * M_CONST_NUMBER * sizeof(scmplx), cudaMemcpyHostToDevice );
 
 	dim3 block( 256 );
 	dim3 grid;
 	grid.x = (nPayloadSymbols + 255)/256;
 
 	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*32, M, d_pDist2, CP );
-	cudaMemcpy( m_pDist2, d_pDist2, nPayloadSymbols*M*sizeof(float), cudaMemcpyDeviceToHost );
 
-	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0);
-	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(double), cudaMemcpyDeviceToHost );
-
+	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
+		m_ldpcCurrent->Dint1, QLLR_MAX);
 
 	// step	2:	de-interleave
-	int rows = nvar / k;
-
-	for (int j=0;j<k;j++)
-		for( int i = 0; i < rows; i++ )
-			p_soft_bits[j*rows+i] = p_soft_bits_cache[i*k+j];	
+#if 1
+	block.y = k;
+	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols);
+	cudaMemcpy( p_soft_bits, d_LLRin, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
+#else
+	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
+	for( int i = 0; i < nPayloadSymbols; i++ )
+		for (int j=0;j<k;j++)
+			p_soft_bits[j*nPayloadSymbols+i] = p_soft_bits_cache[i*k+j];	
+#endif
 
 	// step	3:	ldpc decode
-	bp_decode_once( p_soft_bits, p_bitLDPC, code_rate );
+	bp_decode_once( p_bitLDPC, code_rate );
 
 	// step	4:	cast type, char -> int
 	for( int i = 0; i < nvar; i++ )
 		pFrame[i] = p_bitLDPC[i];
 
 	return 0;
+}
+
+void	ldpc_gpu::updateSymbolsTemplate( scmplx* psymbols )
+{
+	cudaMemcpy( d_pSymbolsTemplate, psymbols, 32 * M_CONST_NUMBER * sizeof(scmplx), cudaMemcpyHostToDevice );
 }
