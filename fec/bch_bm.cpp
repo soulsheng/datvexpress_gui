@@ -197,11 +197,15 @@ bool BCH_BM::error_detection(  char* codeword)
 	for(int i = 0; i < tCapacity*2; i++)
 	{
 		S[i] = 0;
-		for(int j = 0; j < n; j++){
+		for(int j = 0; j < n; j++)
+		{
 			if(codeword[j])
 				S[i] ^= powAlpha[((i+1)*j)%MAXN];
 		}
-		if((S[i] = indexAlpha[S[i]]) != -1)
+
+		S[i] = indexAlpha[S[i]];
+
+		if(S[i] != -1)
 			syn = true;
 
 	}
