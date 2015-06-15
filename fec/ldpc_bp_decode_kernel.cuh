@@ -425,10 +425,11 @@ void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2,
 	int scale)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = threadIdx.y;
 
 	scmplx symIn = sym[i];
 
-	for (int j = 0; j < M; j++) 
+	//for (int j = 0; j < M; j++) 
 	{
 		scmplx symTp = symTemplate[j];
 
@@ -468,10 +469,11 @@ void soft_bit_kernel(float *m_pDist2, int *p_soft_bits_cache, int k, int M, floa
 	int Dint1, const int QLLR_MAX)
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int i = threadIdx.y;
 
 	double d0min, d1min, temp;
 
-		for (int i = 0; i < k; i++) 
+		//for (int i = 0; i < k; i++) 
 		{
 			d0min = d1min = 1<<20;
 

@@ -343,21 +343,22 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 	ncheck = m_ldpcCurrent->ncheck;
 
 	// step	1:	inverse map constellation
-	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );
+	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );// 0.11 ms
 
 	dim3 block( 256 );
 	dim3 grid;
 	grid.x = (nPayloadSymbols + 255)/256;
 
-	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*32, M, d_pDist2, CP );
+	block.y = M;
+	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*32, M, d_pDist2, CP );// 0.006 ms
 
+	block.y = k;
 	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
-		m_ldpcCurrent->Dint1, QLLR_MAX);
+		m_ldpcCurrent->Dint1, QLLR_MAX);// 0.004 ms
 
 	// step	2:	de-interleave
 #if 1
-	block.y = k;
-	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols);
+	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols);// 0.001 ms
 	//cudaMemcpy( p_soft_bits, d_LLRin, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
 #else
 	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
@@ -367,7 +368,7 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 #endif
 
 	// step	3:	ldpc decode
-	bp_decode_once( p_bitLDPC, code_rate );
+	bp_decode_once( p_bitLDPC, code_rate );// 1.8 ms
 
 	// step	4:	cast type, char -> int
 	for( int i = 0; i < nvar; i++ )
