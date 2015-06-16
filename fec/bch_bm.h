@@ -3,6 +3,11 @@
 #define __BCH_H__
 
 #include "modulatorDefinition.h"
+
+#ifdef USE_GPU
+#include "bch_bm_decode.cuh"
+#endif
+
 //////////////////////////// MACRO //////////////////////////////
 // It returns corrective capacity of the code with (n,k) given //
 /////////////////////////////////////////////////////////////////
@@ -127,6 +132,11 @@ private:
 
 	int	code_rate; 
 	int	code_type; 
+	int tCapacity;
+
+#ifdef USE_GPU
+	bch_gpu	m_bch_gpu;
+#endif
 };
 
 #endif

@@ -121,9 +121,12 @@
     <ClInclude Include="..\Sources\dvb_types.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\fec\bch_bm_decode.cu" />
     <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
       <FileType>Document</FileType>
     </CudaCompile>
+    <None Include="..\fec\bch_bm_decode.cuh" />
+    <None Include="..\fec\bch_bm_decode_kernel.cuh" />
     <None Include="..\fec\ldpc_bp_decode.cuh" />
     <None Include="..\fec\ldpc_bp_decode_kernel.cuh" />
   </ItemGroup>

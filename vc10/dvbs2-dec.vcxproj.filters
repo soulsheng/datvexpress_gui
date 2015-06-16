@@ -118,9 +118,18 @@
     <None Include="..\fec\ldpc_bp_decode_kernel.cuh">
       <Filter>cuda</Filter>
     </None>
+    <None Include="..\fec\bch_bm_decode.cuh">
+      <Filter>cuda</Filter>
+    </None>
+    <None Include="..\fec\bch_bm_decode_kernel.cuh">
+      <Filter>cuda</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\fec\bch_bm_decode.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
   </ItemGroup>

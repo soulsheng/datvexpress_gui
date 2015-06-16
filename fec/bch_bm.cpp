@@ -222,12 +222,6 @@ bool BCH_BM::error_detection(  char* codeword)
 void BCH_BM::BerlMass( )
 
 {
-	int tCapacity = 0;
-	if ( code_type == FRAME_NORMAL )
-		tCapacity = t(n,k) + DRIFT;
-	else
-		tCapacity = 12 + DRIFT;
-
 	int t2 = 2*tCapacity;
 	int j,L,l,i;
 	int d, dm, tmp;
@@ -369,14 +363,14 @@ BCH_BM::BCH_BM()
 	:mNormal(16), mShort(14)
 {
 	// Allocation and initialization of the tables of the Galois Field
-	powAlphaNormal = (int *)calloc((1<<mNormal)-2, sizeof(int));
-	indexAlphaNormal = (int *)calloc((1<<mNormal)-1, sizeof(int));
+	powAlphaNormal = (int *)calloc((1<<mNormal), sizeof(int));
+	indexAlphaNormal = (int *)calloc((1<<mNormal), sizeof(int));
 
 	// Galois Field Creation
 	gfField(mNormal, 32+8+4+1, powAlphaNormal, indexAlphaNormal);
 
-	powAlphaShort = (int *)calloc((1<<mShort)-2, sizeof(int));
-	indexAlphaShort = (int *)calloc((1<<mShort)-1, sizeof(int));
+	powAlphaShort = (int *)calloc((1<<mShort), sizeof(int));
+	indexAlphaShort = (int *)calloc((1<<mShort), sizeof(int));
 
 	// Galois Field Creation
 	gfField(mShort, 32+8+2+1, powAlphaShort, indexAlphaShort);
@@ -411,7 +405,13 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 	sdkCreateTimer( &timerStep );
 	sdkStartTimer( &timerStep );
 
-	bool errCode = error_detection(codeword);// 7 ms
+	bool errCode = false;
+
+#ifdef	USE_GPU
+	errCode = m_bch_gpu.error_detection(codeword);
+#else
+	errCode = error_detection(codeword);// 7 ms
+#endif
 
 	sdkStopTimer( &timerStep );
 	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
@@ -563,6 +563,19 @@ void BCH_BM::setCode( int rate, int type )
 	}// else short
 
 	MAXN = (1<<m)-1;
+
+
+	if ( code_type == FRAME_NORMAL )
+		tCapacity = t(n,k) + DRIFT;
+	else
+		tCapacity = 12 + DRIFT;
+
+	int nS = (MAXT + DRIFT)*2;
+
+#ifdef USE_GPU
+	m_bch_gpu.initialize( powAlpha, indexAlpha, mNormal, 
+		S, nS, n, tCapacity, MAXN );
+#endif
 }
 
 int BCH_BM::getN( )
