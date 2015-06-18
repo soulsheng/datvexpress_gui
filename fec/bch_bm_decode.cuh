@@ -21,6 +21,9 @@ protected:
 	int *d_S;          // Syndrome vector
 	char* d_codeword;
 
+	int *d_SCache;        
+	int *m_SCache;        
+
 	int m_nAlphaSize;
 	int m_nSSize;
 

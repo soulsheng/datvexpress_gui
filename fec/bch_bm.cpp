@@ -193,6 +193,7 @@ bool BCH_BM::error_detection(  char* codeword)
 	else
 		tCapacity = 12 + DRIFT;
 
+#if 1
 	bool syn = false;
 	for(int i = 0; i < tCapacity*2; i++)
 	{
@@ -209,6 +210,61 @@ bool BCH_BM::error_detection(  char* codeword)
 			syn = true;
 
 	}
+#else// use block
+
+	int block = BLOCK_DIM;
+	int grid = (n+BLOCK_DIM-1)/BLOCK_DIM ;
+
+	bool syn = false;
+	for(int i = 0; i < tCapacity*2; i++)
+	{
+		S[i] = 0;
+
+		for ( int bID = 0; bID < grid; bID++ )
+		{
+			int		s_powAlpha[BLOCK_DIM] ;
+			char	s_codeword[BLOCK_DIM] ;
+			memset( s_powAlpha, 0, sizeof(int) * BLOCK_DIM );
+			memset( s_codeword, 0, sizeof(char) * BLOCK_DIM );
+
+			for( int tID = 0; tID < block; tID++ )
+			{
+				int j = bID * block + tID ;
+
+				if( j>=n )
+					break;
+
+				s_codeword[ tID ] = codeword[ j ];
+
+				if(s_codeword[ tID ])
+					s_powAlpha[ tID ] = powAlpha[ ((i+1)*j)%MAXN ];
+				else
+					s_powAlpha[ tID ] = 0;
+
+
+			}
+
+			for( int offset = block / 2; offset>=1; offset /= 2 )
+			{
+				for( int tID = 0; tID < block; tID++ )
+				{
+					if( tID < offset )
+						s_powAlpha[ tID ] ^= s_powAlpha[ tID + offset ];
+				}
+			}
+
+			S[i] ^= s_powAlpha[0];
+		}
+
+
+		S[i] = indexAlpha[S[i]];
+
+		if(S[i] != -1)
+			syn = true;
+
+	}
+
+#endif
 
 	return syn;
 
@@ -408,7 +464,7 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 	bool errCode = false;
 
 #ifdef	USE_GPU
-	errCode = m_bch_gpu.error_detection(codeword);
+	errCode = m_bch_gpu.error_detection(codeword);// 1ms
 #else
 	errCode = error_detection(codeword);// 7 ms
 #endif
@@ -460,7 +516,7 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 	sdkStopTimer( &timerStep );
 	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.06 ms
 
-#if 1// cost time 0.7ms/cout 
+#if 0// cost time 0.7ms/cout 
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;

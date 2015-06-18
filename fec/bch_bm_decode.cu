@@ -4,6 +4,9 @@
 #include "bch_bm_decode_kernel.cuh"
 #include <cuda_runtime.h>
 
+#include <stdlib.h>
+
+
 bch_gpu::bch_gpu()
 {
 
@@ -28,12 +31,18 @@ void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal,
 	cudaMalloc( (void**)&d_indexAlpha, m_nAlphaSize*sizeof(int) );
 	cudaMalloc( (void**)&d_S, m_nSSize*sizeof(int) );
 
-	cudaMemcpy( d_powAlpha, d_powAlpha, m_nAlphaSize*sizeof(int), cudaMemcpyHostToDevice );
-	cudaMemcpy( d_indexAlpha, d_indexAlpha, m_nAlphaSize*sizeof(int), cudaMemcpyHostToDevice );
+	cudaMemcpy( d_powAlpha, powAlpha, m_nAlphaSize*sizeof(int), cudaMemcpyHostToDevice );
+	cudaMemcpy( d_indexAlpha, indexAlpha, m_nAlphaSize*sizeof(int), cudaMemcpyHostToDevice );
 	cudaMemcpy( d_S, S, nS*sizeof(int), cudaMemcpyHostToDevice );
 
-	cudaMalloc( (void**)&d_codeword, n*sizeof(int) );
+	cudaMalloc( (void**)&d_codeword, n*sizeof(char) );
 	
+	
+	cudaMalloc( (void**)&d_SCache, BLOCK_DIM*sizeof(int) );
+	cudaMemset( d_SCache, 0, BLOCK_DIM*sizeof(int) );
+
+	m_SCache = (int*) calloc(BLOCK_NUM_MAX,sizeof(int));
+
 	this->powAlpha = powAlpha;
 	this->indexAlpha = indexAlpha;
 	this->S = S;
@@ -53,17 +62,25 @@ void bch_gpu::release()
 bool bch_gpu::error_detection( char* codeword )
 {
 	this->codeword = codeword;
+	cudaMemcpy( d_codeword, codeword, n*sizeof(char), cudaMemcpyHostToDevice );
 
+	dim3 block(BLOCK_DIM);
+	dim3 grid( (n+BLOCK_DIM-1)/BLOCK_DIM );
+	for(int i = 0; i < tCapacity*2; i++)
+	{
+		error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, i, MAXN, n );
+		cudaMemcpy( m_SCache, d_SCache, grid.x * sizeof(int), cudaMemcpyDeviceToHost );
+		
+		S[i] = 0;
+		for( int j=0; j< grid.x; j++ )
+		{
+			S[i] ^= m_SCache[j];
+		}
+	}
+	
 	bool syn = false;
 	for(int i = 0; i < tCapacity*2; i++)
 	{
-		S[i] = 0;
-		for(int j = 0; j < n; j++)
-		{
-			if(codeword[j])
-				S[i] ^= powAlpha[((i+1)*j)%MAXN];
-		}
-
 		S[i] = indexAlpha[S[i]];
 
 		if(S[i] != -1)
