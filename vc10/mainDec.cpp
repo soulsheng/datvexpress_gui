@@ -6,7 +6,7 @@
 #define PACKET_NUMBER	100
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
-#define PRINT_SIZE		16
+#define PRINT_SIZE		188 * 20
 #define DATA_FROM_ENC	1	// ENCODE OR FILE
 #define VALUE_DIFF		60
 
@@ -16,7 +16,9 @@
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n, int nstart = 0);	// output encoded info
 template<typename T>
-void print(T* b, int n, int nstart = 0);		// output original info
+void print(T* b, /*int n, */int nstart = 0);		// output original info
+template<typename T>
+bool verify(T* b, /*int n, */int nstart = 0);		// verify original info
 int findHeader(scmplx* c, int n, int* pos);
 
 template<typename T>
@@ -63,7 +65,12 @@ void main()
 	printf("decode time : %f \n", fTime );	// 27 ms, 529(d)
 	printf("decode speed : %f MBd/s \n", nSymbol/fTime * 0.001f );
 
-	print( m_dvbs2_dec->getByte(), PACKET_SIZE );
+	//print( m_dvbs2_dec->getByte() );
+	if( verify( m_dvbs2_dec->getByte() ) )
+		printf("succeed \n");
+	else
+		printf("failed \n");
+
 	delete	m_dvbs2_dec;
 }
 
@@ -82,11 +89,28 @@ void print(scmplx* c, int n, int nstart/* = 0*/)	// output encoded info
 }
 
 template<typename T>
-void print(T* b, int n, int nstart/* = 0*/)		// output original info
+void print(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 {
 	int nPrint = nstart+PRINT_SIZE;//n;
 	for (int i=nstart;i<nPrint;i++)
 		printf("%d: %d \n", i, b[i] );
+}
+
+
+template<typename T>
+bool verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
+{
+	bool bResult = true;
+	int nPrint = nstart+PRINT_SIZE;//n;
+	for (int i=nstart;i<nPrint;i++)
+	{
+		if( (i+1)%256 != b[i] )
+		{
+			printf("\n%d: %d \n", i, b[i] );
+			bResult = false;
+		}
+	}
+	return bResult;
 }
 
 template<typename T>
