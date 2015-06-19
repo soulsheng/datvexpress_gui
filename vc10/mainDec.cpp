@@ -104,7 +104,7 @@ bool verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 	int nPrint = nstart+PRINT_SIZE;//n;
 	for (int i=nstart;i<nPrint;i++)
 	{
-		if( (i+1)%256 != b[i] )
+		if( i%256 != b[i] )
 		{
 			printf("\n%d: %d \n", i, b[i] );
 			bResult = false;

@@ -131,10 +131,10 @@ void DVB2::unpack_transport_packet_add_crc( u8 *ts )
     // CRC is added in place of sync byte at end of packet
     // skip the header 0x47
     u8 crc = calc_crc8( &ts[1], 188-1  );
+    // Add the crc
+	m_tp_q.push(crc);
     // Add the transport packet to the transport queue
     for( int i = 1; i < 188; i++ ) m_tp_q.push( ts[i] );
-    // Add the crc
-    m_tp_q.push(crc);
     // now pull off the transport queue and fill the frame
     while((m_tp_q.size()!= 0)&&(m_frame_offset_bits!=m_format[0].kbch))
     {
