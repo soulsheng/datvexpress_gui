@@ -23,6 +23,12 @@ public:
 	~DVBS2_DECODE();
 
 	int s2_decode_ts_frame( scmplx* pl );	// c m_pl[]	->	B ts[]
+
+	unsigned char* getByte();
+
+	void initialize();
+
+protected:
 	void s2_pl_header_decode();	// c m_pl[90]	->	i MODCOD
 	int s2_demodulate_hard();	// c m_pl[>90]	->	i m_iframe
 	void s2_deinterleave();		// i m_iframe	->	b m_frame 
@@ -34,11 +40,7 @@ public:
 	void bb_randomise_decode();
 	void transport_packet_decode_crc( Bit* b );
 	bool decode_bbheader();
-	unsigned char* getByte();
 
-	void initialize();
-
-protected:
 	int	checkSOF(int* sof, int n);
 	void s2_pl_header_decode( u8* modcod, u8* type, int *b);
 	void b_64_7_decode( unsigned char *c, int *b );
