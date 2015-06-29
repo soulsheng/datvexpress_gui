@@ -85,7 +85,7 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
 
-#ifndef USE_GPU
+#ifndef USE_GPU0
 		decode_soft( &m_pl[90], N0 );
 #else	
 		ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
