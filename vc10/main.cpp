@@ -57,27 +57,34 @@ void main()
 	for (int i=0;i<PACKET_NUMBER;i++)
 	{
 		if( m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE ) )
-			break;
+			/*break*/;
 	}
-
-	memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
-		m_dvbs2->pl_get_frame(), sizeof(scmplx)*FRAME_SIZE_NORMAL);
-
-	delete	m_dvbs2;
 
 	FILE *fp = fopen( DATA_FILE_NAME_ENC, "wb" );
 	if( fp )
 	{
-		memcpy_s(  pBuffer,	sizeof(short)*FRAME_SIZE_NORMAL*2, 
-			pl, sizeof(scmplx)*FRAME_SIZE_NORMAL );
+		int nFrameCount = m_dvbs2->get_frame_count();
 
-		fwrite( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp );
+		fwrite( &nFrameCount, sizeof(int), 1, fp );
+
+		for ( int i = 0; i<nFrameCount; i++ )
+		{
+
+			memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
+				m_dvbs2->pl_get_frame(i), sizeof(scmplx)*FRAME_SIZE_NORMAL);
+
+			memcpy_s(  pBuffer,	sizeof(short)*FRAME_SIZE_NORMAL*2, 
+				pl, sizeof(scmplx)*FRAME_SIZE_NORMAL );
+
+			fwrite( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp );
+		}
 
 		fclose( fp );
 	}
 	else
 		printf("failed to open file %s \n",DATA_FILE_NAME );
 
+	delete	m_dvbs2;
 
 	print( pl, PACKET_SIZE );
 

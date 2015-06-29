@@ -12,7 +12,7 @@ void  DVBS2::end_of_frame_actions(void)
         m_s2_config_updated = 0;
     }
 
-	memcpy_s( m_pl_cache, sizeof(scmplx)*FRAME_SIZE_NORMAL,
+	memcpy_s( m_pl_cache+m_nTotalFrame*FRAME_SIZE_NORMAL, sizeof(scmplx)*FRAME_SIZE_NORMAL,
 		m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL );
 
 	m_nTotalFrame ++ ;
@@ -182,5 +182,10 @@ int DVBS2::s2_get_n_symbol()
 		nSymbol += nPilot;
 
 	return nSymbol;
+}
+
+int DVBS2::get_frame_count()
+{
+	return	m_nTotalFrame;
 }
 

@@ -16,7 +16,7 @@
 void init(u8* buffer, int n);	// initialize info
 void print(scmplx* c, int n, int nstart = 0);	// output encoded info
 template<typename T>
-void print(T* b, /*int n, */int nstart = 0);		// output original info
+void print(T* b, /*int n, */int nstart = 0, int nsize=PRINT_SIZE);		// output original info
 template<typename T>
 bool verify(T* b, /*int n, */int nstart = 0);		// verify original info
 int findHeader(scmplx* c, int n, int* pos);
@@ -26,21 +26,24 @@ int findHeader(T* c, int n, int* pos);
 
 void main()
 {
-	scmplx pl[FRAME_SIZE_NORMAL];
+	scmplx* pl = new scmplx[FRAME_SIZE_NORMAL*FRAME_CACHE_COUNT];
 	short  pBuffer[FRAME_SIZE_NORMAL*2];
 	printf("%d,%d,%d \n", sizeof(long), sizeof(int), sizeof(short) );
 
 
-
+	int nFrameCount = 0;
 	FILE *fp2 = fopen( DATA_FILE_NAME_ENC, "rb" );
-	if( fp2 )
+	if( !fp2 )
+		printf("failed to open file %s \n",DATA_FILE_NAME );
+	
+	fread( &nFrameCount, sizeof(int), 1, fp2 );
+
+	for ( int i = 0; i<nFrameCount; i++ )
 	{
 		fread( pBuffer, sizeof(short), FRAME_SIZE_NORMAL*2, fp2 );
-		memcpy_s( pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, pBuffer,
+		memcpy_s( pl + i*FRAME_SIZE_NORMAL, sizeof(scmplx)*FRAME_SIZE_NORMAL, pBuffer,
 			sizeof(short)*FRAME_SIZE_NORMAL*2 );
 	}
-	else
-		printf("failed to open file %s \n",DATA_FILE_NAME );
 
 	fclose( fp2 );
 
@@ -52,10 +55,18 @@ void main()
 
 	StopWatchInterface	*timerStep;
 	sdkCreateTimer( &timerStep );
+
+#if 0
+	int i = 0;
+#else
+	for ( int i = 0;i<nFrameCount;i++ )
+#endif
+	{
+	
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
-
-	m_dvbs2_dec->s2_decode_ts_frame( pl );
+	 
+	m_dvbs2_dec->s2_decode_ts_frame( pl + i*FRAME_SIZE_NORMAL );
 
 	sdkStopTimer( &timerStep );
 	float fTime =sdkGetTimerValue( &timerStep ) ;
@@ -70,8 +81,10 @@ void main()
 		printf("succeed \n");
 	else
 		printf("failed \n");
+	}
 
 	delete	m_dvbs2_dec;
+	free( pl );
 }
 
 void init(u8* buffer, int n)	// initialize info
@@ -89,9 +102,9 @@ void print(scmplx* c, int n, int nstart/* = 0*/)	// output encoded info
 }
 
 template<typename T>
-void print(T* b, /*int n, */int nstart/* = 0*/)		// output original info
+void print(T* b, /*int n, */int nstart/* = 0*/, int nsize)		// output original info
 {
-	int nPrint = nstart+PRINT_SIZE;//n;
+	int nPrint = nstart+nsize;//n;
 	for (int i=nstart;i<nPrint;i++)
 		printf("%d: %d \n", i, b[i] );
 }
@@ -104,7 +117,7 @@ bool verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 	int nPrint = nstart+PRINT_SIZE;//n;
 	for (int i=nstart;i<nPrint;i++)
 	{
-		if( i%PACKET_SIZE && i%256 != b[i] )
+		if( /*i%PACKET_SIZE &&*/ (i+b[1]-1)%256 != b[i] )
 		{
 			printf("\n%d: %d \n", i, b[i] );
 			bResult = false;

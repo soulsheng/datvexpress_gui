@@ -317,9 +317,9 @@ void DVBS2::pl_build_dummy( void )
     m_dummy_frame_length = n;
 }
 
-scmplx * DVBS2::pl_get_frame()
+scmplx * DVBS2::pl_get_frame(int nFrame)
 {
-    return m_pl_cache; 
+    return m_pl_cache + nFrame * FRAME_SIZE_NORMAL; 
 }
 
 scmplx * DVBS2::pl_get_dummy( int &len )
