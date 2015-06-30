@@ -29,8 +29,6 @@
 #define		SHORT_BCH			0
 #define		MOD_TYPE_DEFAULT	4
 
-#include "driverUtility.h"
-
 #include <itpp/itcomm.h>
 #include <iostream>
 using namespace std;
