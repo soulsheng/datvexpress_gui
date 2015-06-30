@@ -85,10 +85,10 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
 
-#ifndef USE_GPU0
+#ifndef USE_GPU
 		decode_soft( &m_pl[90], N0 );
 #else	
-		ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
+		m_ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
 			m_frame, m_format[0].code_rate,
 			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 1.8 ms
 #endif
@@ -489,7 +489,7 @@ void DVBS2_DECODE::ldpc_decode()
 		ldpc.bp_decode( m_soft_bits, m_bitLDPC, m_format[0].code_rate  );
 #ifdef USE_GPU
 	else
-		ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
+		m_ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
 #endif
 
 	// interleave
@@ -842,7 +842,7 @@ void DVBS2_DECODE::set_configure()
 	memcpy_s( m_Symbols[M_32APSK], 60*sizeof(scmplx), m_32apsk, 32*sizeof(scmplx) );
 	
 #ifdef USE_GPU
-	ldpc_gpu.updateSymbolsTemplate( m_Symbols[0] );
+	m_ldpc_gpu.updateSymbolsTemplate( m_Symbols[0] );
 #endif	
 
 }
@@ -855,7 +855,7 @@ void DVBS2_DECODE::initialize()
 
 	bch.initialize();
 #ifdef USE_GPU
-	ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0]);
+	m_ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0]);
 #endif
 }
 
@@ -950,7 +950,7 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 
 	// step	3:	ldpc decode
 #ifdef USE_GPU
-	ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
+	m_ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
 #endif
 
 	// step	4:	cast type, char -> int

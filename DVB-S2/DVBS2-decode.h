@@ -71,7 +71,7 @@ private:
 	BCH_BM	bch;
 
 #ifdef USE_GPU
-	ldpc_gpu	ldpc_gpu;
+	ldpc_gpu	m_ldpc_gpu;
 #endif
 	bool	m_bUseGPU;
 
