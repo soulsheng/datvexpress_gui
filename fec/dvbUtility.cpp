@@ -62,3 +62,34 @@ int min(int *v, int N)
 			tmp = v[i];
 	return tmp;
 }
+
+
+void	writeFile(int nvar, int ncheck, int nmaxX1, int nmaxX2, char* filename)
+{
+	FILE* fp;
+	fp = fopen( filename, "wb" );
+	if( !fp )
+		return;
+
+	fwrite( &nvar, sizeof(int), 1, fp );
+	fwrite( &ncheck, sizeof(int), 1, fp );
+	fwrite( &nmaxX1, sizeof(int), 1, fp );
+	fwrite( &nmaxX2, sizeof(int), 1, fp );
+
+	fclose( fp );
+}
+
+void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename)
+{
+	FILE* fp;
+	fp = fopen( filename, "rb" );
+	if( !fp )
+		return;
+
+	fread( &nvar, sizeof(int), 1, fp );
+	fread( &ncheck, sizeof(int), 1, fp );
+	fread( &nmaxX1, sizeof(int), 1, fp );
+	fread( &nmaxX2, sizeof(int), 1, fp );
+
+	fclose( fp );
+}

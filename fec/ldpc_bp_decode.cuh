@@ -106,5 +106,5 @@ private:
 	float*	m_pDist2 ;			// [FRAME_SIZE_NORMAL][32]
 
 	int*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
-
+	int*	h_LLRin;
 };

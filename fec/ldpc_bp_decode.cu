@@ -123,8 +123,11 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate,
 #if WRITE_FILE_FOR_DRIVER
 	static bool bRunOnce1 = false;
 	if( !bRunOnce1 ){
-		cudaMemcpy( h_mvc, d_mvc, nvar * nmaxX1 * sizeof(int), cudaMemcpyDeviceToHost );
-		writeArray( h_mvc, nvar * nmaxX1, "../data/mvcInit.txt" );		
+		cudaMemcpy( h_mvc, m_ldpcCurrent->d_mvc, nvar * m_ldpcCurrent->nmaxX1 * sizeof(int), cudaMemcpyDeviceToHost );
+		writeArray( h_mvc, nvar * m_ldpcCurrent->nmaxX1, "../data/mvcInit.txt" );
+	
+		cudaMemcpy( h_LLRin, d_LLRin, nvar * sizeof(int), cudaMemcpyDeviceToHost );
+		writeArray( h_LLRin, nvar, "../data/input.txt" );
 		bRunOnce1 = true;
 	}
 #endif
@@ -144,9 +147,9 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate,
 #if WRITE_FILE_FOR_DRIVER
 		static bool bRunOnce1 = false;
 		if( iter == 1 && !bRunOnce1 ){
-			cudaMemcpy( h_mcv, d_mcv, ncheck * nmaxX2 * sizeof(int), cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_mcv, m_ldpcCurrent->d_mcv, ncheck * m_ldpcCurrent->nmaxX2 * sizeof(int), cudaMemcpyDeviceToHost );
 
-			writeArray( h_mcv, ncheck * nmaxX2, "../data/mcv.txt" );
+			writeArray( h_mcv, ncheck * m_ldpcCurrent->nmaxX2, "../data/mcv.txt" );
 
 			bRunOnce1 = true;
 		}
@@ -181,10 +184,10 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate,
 #if WRITE_FILE_FOR_DRIVER
 		static bool bRunOnce2 = false;
 		if( iter == 1 && !bRunOnce2 ){
-			cudaMemcpy( h_mvc, d_mvc, nvar * nmaxX1 * sizeof(int), cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_mvc, m_ldpcCurrent->d_mvc, nvar * m_ldpcCurrent->nmaxX1 * sizeof(int), cudaMemcpyDeviceToHost );
 
 			writeArray( LLRout, nvar, "../data/output.txt" );
-			writeArray( h_mvc, nvar * nmaxX1, "../data/mvc.txt" );		
+			writeArray( h_mvc, nvar * m_ldpcCurrent->nmaxX1, "../data/mvc.txt" );		
 
 			bRunOnce2 = true;
 		}
@@ -278,7 +281,8 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols )
 #endif
 
 	h_mvc = (int*)malloc(nvar * MAX_LOCAL_CACHE * sizeof(int));
-	h_mcv = (int*)malloc(nvar * MAX_LOCAL_CACHE * sizeof(int));
+	h_mcv = (int*)malloc(ncheck * MAX_LOCAL_CACHE * sizeof(int));
+	h_LLRin= (int*)malloc(nvar * sizeof(int));
 
 	return true;
 }
@@ -294,7 +298,7 @@ bool ldpc_gpu::release()
 
 	cudaFree( d_pDist2 );
 
-	free( h_mvc );	free( h_mcv );
+	free( h_mvc );	free( h_mcv );	free( h_LLRin );
 
 	free( m_pDist2 );
 

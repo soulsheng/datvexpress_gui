@@ -15,3 +15,4 @@
 /vc10/fec/*.deps
 /vc10/*.pdb
 /vc10/Release
+/data/*.txt

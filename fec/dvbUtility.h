@@ -29,6 +29,8 @@
 #define		SHORT_BCH			0
 #define		MOD_TYPE_DEFAULT	4
 
+#include "driverUtility.h"
+
 #include <itpp/itcomm.h>
 #include <iostream>
 using namespace std;
@@ -51,3 +53,6 @@ void convertVecToBuffer( double* buffer, cvec& a );
 int max(int *v, int N);
 //! Minimum value of vector
 int min(int *v, int N);
+
+void	writeFile(int nvar, int ncheck, int nmaxX1, int nmaxX2, char* filename);
+void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename);

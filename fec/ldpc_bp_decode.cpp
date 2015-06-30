@@ -323,7 +323,17 @@ int ldpc_decoder::bp_decode(int *LLRin, char *LLRout, int code_rate)		//!< Maxim
 #if WRITE_FILE_FOR_DRIVER
 	static bool bRunOnce1 = false;
 	if( !bRunOnce1 ){
-		writeArray( mvc, nvar * nmaxX1, "../data/mvcInit.txt" );		
+		writeFile( m_ldpcCurrent->nvar, m_ldpcCurrent->ncheck, m_ldpcCurrent->nmaxX1, m_ldpcCurrent->nmaxX2, "../data/ldpcSize.txt" );
+		writeArray( m_ldpcCurrent->mvc, m_ldpcCurrent->nvar * m_ldpcCurrent->nmaxX1, "../data/mvcInit.txt" );		
+		
+		writeArray( LLRin, m_ldpcCurrent->nvar, "../data/input.txt" );
+		writeArray( m_ldpcCurrent->sumX1, m_ldpcCurrent->nvar, "../data/sumX1.txt" );
+		writeArray( m_ldpcCurrent->sumX2, m_ldpcCurrent->ncheck, "../data/sumX2.txt" );
+
+		writeArray( m_ldpcCurrent->iind, m_ldpcCurrent->nvar * m_ldpcCurrent->nmaxX1, "../data/iind.txt" );
+		writeArray( m_ldpcCurrent->jind, m_ldpcCurrent->ncheck * m_ldpcCurrent->nmaxX2, "../data/jind.txt" );
+		writeArray( m_ldpcCurrent->logexp_table, m_ldpcCurrent->Dint2, "../data/logexp.txt" );
+
 		bRunOnce1 = true;
 	}
 #endif
@@ -350,7 +360,7 @@ int ldpc_decoder::bp_decode(int *LLRin, char *LLRout, int code_rate)		//!< Maxim
 	static bool bRunOnce1 = false;
 	if( iter == 1 && !bRunOnce1 ){
 
-		writeArray( mcv, ncheck * nmaxX2, "../data/mcv.txt" );
+		writeArray( m_ldpcCurrent->mcv, m_ldpcCurrent->ncheck * m_ldpcCurrent->nmaxX2, "../data/mcv.txt" );
 
 		bRunOnce1 = true;
 	}
@@ -372,8 +382,8 @@ int ldpc_decoder::bp_decode(int *LLRin, char *LLRout, int code_rate)		//!< Maxim
 	static bool bRunOnce2 = false;
 	if( iter == 1 && !bRunOnce2 ){
 
-		writeArray( LLRout, nvar, "../data/output.txt" );
-		writeArray( mvc, nvar * nmaxX1, "../data/mvc.txt" );		
+		writeArray( LLRout, m_ldpcCurrent->nvar, "../data/output.txt" );
+		writeArray( m_ldpcCurrent->mvc, m_ldpcCurrent->nvar * m_ldpcCurrent->nmaxX1, "../data/mvc.txt" );		
 
 		bRunOnce2 = true;
 	}
