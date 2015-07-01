@@ -43,12 +43,16 @@
     <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
     <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\..\bin\</OutDir>
+    <TargetName>$(ProjectName)_vc10d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
     <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\..\bin\</OutDir>
+    <TargetName>$(ProjectName)_vc10</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
