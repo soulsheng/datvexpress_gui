@@ -15,14 +15,14 @@ using namespace std;
 #define		SIZE_BLOCK_2D_X		32
 
 #define		USE_BLOCK_2D		0
-#define		N_FRAME				1	// time scales as long as data length scales
+#define		N_FRAME				20	// time scales as long as data length scales
 
 #define		BLOCK_DIM		256
 #define		BLOCK_NUM_MAX	512
 //extern __shared__ int s_array[ ];
 
 __global__ 
-void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, int MAXN, int n )
+void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int i, int MAXN, int n, int nFrame )
 {
 	int j = blockIdx.x * blockDim.x + threadIdx.x ;
 
@@ -31,6 +31,11 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, 
 
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
 	__shared__ char	s_codeword[BLOCK_DIM] ;
+
+	for( int frame = 0; frame < nFrame; frame ++ )	{
+
+	const char	*codeword	= n_codeword + frame * n;
+	int			*SCache		= n_SCache + frame * gridDim.x;
 
 	s_codeword[ threadIdx.x ] = codeword[ j ];
 	if(s_codeword[ threadIdx.x ])
@@ -52,6 +57,8 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, 
 	if( threadIdx.x == 0 )
 		SCache[blockIdx.x] = s_powAlpha[0];
 	__syncthreads();
+
+	}
 }
 
 
@@ -72,7 +79,7 @@ bool driverErrorDetection::launch()
 	dim3 block(BLOCK_DIM);
 	dim3 grid( (m_nCodeword+BLOCK_DIM-1)/BLOCK_DIM );
 
-	error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, 0, MAXN, m_nCodeword );
+	error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, 0, MAXN, m_nCodeword, N_FRAME );
 
 #endif
 
@@ -82,17 +89,17 @@ bool driverErrorDetection::launch()
 
 bool driverErrorDetection::verify()
 {
-	cudaMemcpy( SCache, d_SCache, m_nGrid * sizeof(int), cudaMemcpyDeviceToHost );
+	cudaMemcpy( SCache, d_SCache, m_nGrid * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
 
 	// output
 	int i = 0;
-	for ( ; i < m_nGrid; i++ )
+	for ( ; i < m_nGrid * N_FRAME; i++ )
 	{
 		if ( ref_SCache[i] != SCache[i] )
 			break;
 	}
 
-	if ( i < m_nGrid )
+	if ( i < m_nGrid * N_FRAME )
 		return false;
 
 	return true;
@@ -143,7 +150,7 @@ driverErrorDetection::driverErrorDetection( )
 
 	readFile( m_nCodeword, m_nAlpha, m_nGrid, MAXN, "../data/bchSize.txt" );
 
-	codeword = (char*)malloc(m_nCodeword * sizeof(char));
+	codeword = (char*)malloc(m_nCodeword * sizeof(char) * N_FRAME);
 	powAlpha = (int*)malloc(m_nAlpha  * sizeof(int));
 	SCache = (int*)malloc(m_nGrid * sizeof(int) * N_FRAME);
 
@@ -153,14 +160,20 @@ driverErrorDetection::driverErrorDetection( )
 	readArray( powAlpha, m_nAlpha, "../data/powAlpha.txt" );
 	readArray( ref_SCache, m_nGrid, "../data/SCache.txt" );  
 
-	cudaMalloc( (void**)&d_codeword, m_nCodeword*sizeof(char) );
-	cudaMemcpy( d_codeword, codeword, m_nCodeword*sizeof(char), cudaMemcpyHostToDevice );
+	for( int i = 0; i < N_FRAME; i ++ )
+	{
+		memcpy( codeword + i * m_nCodeword, codeword,  m_nCodeword * sizeof(char) );
+		memcpy( ref_SCache + i * m_nGrid, ref_SCache,  m_nGrid * sizeof(int) );
+	}
+
+	cudaMalloc( (void**)&d_codeword, m_nCodeword*sizeof(char) * N_FRAME );
+	cudaMemcpy( d_codeword, codeword, m_nCodeword*sizeof(char) * N_FRAME, cudaMemcpyHostToDevice );
 
 	cudaMalloc( (void**)&d_powAlpha, m_nAlpha*sizeof(int) );
 	cudaMemcpy( d_powAlpha, powAlpha, m_nAlpha * sizeof(int), cudaMemcpyHostToDevice );
 
-	cudaMalloc( (void**)&d_SCache, m_nGrid*sizeof(int) );
-	cudaMemset( d_SCache, 0, m_nGrid*sizeof(int) );
+	cudaMalloc( (void**)&d_SCache, m_nGrid*sizeof(int) * N_FRAME );
+	cudaMemset( d_SCache, 0, m_nGrid*sizeof(int) * N_FRAME );
 
 }
 
