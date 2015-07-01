@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 
 #include <stdlib.h>
+#include "dvbUtility.h"
 
 
 bch_gpu::bch_gpu()
@@ -71,6 +72,19 @@ bool bch_gpu::error_detection( char* codeword )
 		error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, i, MAXN, n );
 		cudaMemcpy( m_SCache, d_SCache, grid.x * sizeof(int), cudaMemcpyDeviceToHost );
 		
+		
+#if WRITE_FILE_FOR_DRIVER
+	static bool bRunOnce1 = false;
+	if( !bRunOnce1 ){
+		writeFile( n, m_nAlphaSize, grid.x, MAXN, "../data/bchSize.txt" );
+		writeArray( codeword, n, "../data/codeword.txt" );		
+		writeArray( powAlpha, m_nAlphaSize, "../data/powAlpha.txt" );
+		writeArray( m_SCache, grid.x, "../data/SCache.txt" );
+
+		bRunOnce1 = true;
+	}
+#endif
+
 		S[i] = 0;
 		for( int j=0; j< grid.x; j++ )
 		{

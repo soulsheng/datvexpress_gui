@@ -29,6 +29,8 @@
 #define		SHORT_BCH			0
 #define		MOD_TYPE_DEFAULT	4
 
+#define		WRITE_FILE_FOR_DRIVER	1
+
 #include <itpp/itcomm.h>
 #include <iostream>
 using namespace std;
@@ -54,3 +56,32 @@ int min(int *v, int N);
 
 void	writeFile(int nvar, int ncheck, int nmaxX1, int nmaxX2, char* filename);
 void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename);
+void	writeFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
+void	readFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
+
+
+template <typename T>
+void 	readArray(T* pArray, int nSize, char* strFileName)
+{
+	FILE* fp = NULL;
+	fp = fopen( strFileName, "rb" );
+	if(fp == NULL)
+	{
+		printf("failed to open: %s!\n", strFileName);
+	}
+	fread( pArray, sizeof(T), nSize, fp);
+	fclose(fp);
+}
+
+template <typename T>
+void	writeArray(T* pArray, int nSize, char* strFileName)
+{
+	FILE* fp = NULL;
+	fp = fopen( strFileName, "wb" );
+	if(fp == NULL)
+	{
+		printf("failed to open: %s!\n", strFileName);
+	}
+	fwrite( pArray, sizeof(T), nSize, fp);
+	fclose(fp);
+}

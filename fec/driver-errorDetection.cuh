@@ -15,21 +15,21 @@ public:
 	~driverErrorDetection();
 
 private:
-	int nvar, ncheck;
-	int nmaxX1, nmaxX2;
+	int m_nAlpha;
+	int m_nCodeword;
+	int m_nGrid;
+	int MAXN;
 
 	// host
-	int *sumX1;
-	int *iind;
-	int *mvc, *mcv;
-	int *input;	char *output;
+	int *powAlpha;
+	int *SCache;
+	char* codeword;
 
-	int *ref_mvc;	char *ref_output;
+	int *ref_SCache;
 
 	// device
-	int *d_sumX1;
-	int *d_iind;
-	int *d_mvc, *d_mcv;
-	int *d_input;	char *d_output;
+	int *d_powAlpha;
+	int *d_SCache;          // Syndrome vector
+	char* d_codeword;
 
 };

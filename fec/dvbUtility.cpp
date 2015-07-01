@@ -93,3 +93,31 @@ void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename)
 
 	fclose( fp );
 }
+
+void	readFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename)
+{
+	FILE* fp;
+	fp = fopen( filename, "rb" );
+	if( !fp )
+		return;
+
+	fread( &nCodeword, sizeof(int), 1, fp );
+	fread( &nAlpha, sizeof(int), 1, fp );
+	fread( &nGrid, sizeof(int), 1, fp );
+
+	fclose( fp );
+}
+
+void	writeFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename)
+{
+	FILE* fp;
+	fp = fopen( filename, "wb" );
+	if( !fp )
+		return;
+
+	fwrite( &nCodeword, sizeof(int), 1, fp );
+	fwrite( &nAlpha, sizeof(int), 1, fp );
+	fwrite( &nGrid, sizeof(int), 1, fp );
+
+	fclose( fp );
+}

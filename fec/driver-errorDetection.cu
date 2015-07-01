@@ -15,77 +15,43 @@ using namespace std;
 #define		SIZE_BLOCK_2D_X		32
 
 #define		USE_BLOCK_2D		0
-#define		N_FRAME				10	// time scales as long as data length scales
+#define		N_FRAME				1	// time scales as long as data length scales
+
+#define		BLOCK_DIM		256
+#define		BLOCK_NUM_MAX	512
+//extern __shared__ int s_array[ ];
 
 __global__ 
-void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int* sumX1, const int* n_mcv, const int* iind, const int * n_LLRin, 
-	char * n_LLRout, int* n_mvc, 
-	int nmaxX1, int nmaxX2, int nFrame ) // not used, just for testing performance bound
-{	//	mcv const(input)-> mvc (output)
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	
-	if( i>= nvar )
+void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, int MAXN, int n )
+{
+	int j = blockIdx.x * blockDim.x + threadIdx.x ;
+
+	if( j >= n )
 		return;
-	
-	for( int frame = 0; frame < nFrame; frame ++ )	{
 
-	const int	*LLRin	= n_LLRin + frame * nvar;
-	const int	*mcv	= n_mcv + frame * ncheck * nmaxX2;
-	char	*LLRout = n_LLRout + frame * nvar;
-	int		*mvc	= n_mvc + frame * nvar * nmaxX1;
+	__shared__ int	s_powAlpha[BLOCK_DIM] ;
+	__shared__ char	s_codeword[BLOCK_DIM] ;
 
-	int mvc_temp = LLRin[i];
+	s_codeword[ threadIdx.x ] = codeword[ j ];
+	if(s_codeword[ threadIdx.x ])
+  		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+	else
+		s_powAlpha[ threadIdx.x ] = 0;
 
-	int m[MAX_LOCAL_CACHE];
-
-	for (int jp = 0; jp < sumX1[i]; jp++)
-		m[jp] = mcv[ iind[i + jp*nvar] ];
-
-
-	for (int jp = 0; jp < sumX1[i]; jp++)
-		mvc_temp += m[jp];
-	
-
-	LLRout[i] = mvc_temp<0;
-	
-	for (int jp = 0; jp < sumX1[i]; jp++)
-			mvc[i + jp*nvar] = mvc_temp - m[jp];
-	}
-}
-
-
-__global__ 
-void updateVariableNodeOpti2D_kernel( const int nvar, const int ncheck, const int* sumX1, const int* mcv, const int* iind, const int * LLRin, 
-	char * LLRout, int* mvc ) // not used, just for testing performance bound
-{	//	mcv const(input)-> mvc (output)
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	
-	if( i>= nvar )
-		return;
-		
-	__shared__ int mvc_temp[SIZE_BLOCK_2D_X];
-	__shared__ int m[MAX_LOCAL_CACHE][SIZE_BLOCK_2D_X];
-	
-
-	if( threadIdx.y < sumX1[i] )
-		m[threadIdx.y][threadIdx.x] = mcv[ iind[i + threadIdx.y*nvar] ];
 	__syncthreads();
 
-	if( threadIdx.y == 0 )
+	for( int offset = blockDim.x / 2; offset>=1; offset /= 2 )
 	{
-		mvc_temp[threadIdx.x] = LLRin[i];
+		if( threadIdx.x < offset )
+				s_powAlpha[ threadIdx.x ] ^= s_powAlpha[ threadIdx.x + offset ];
 
-		for (int jp = 0; jp < sumX1[i]; jp++)
-			mvc_temp[threadIdx.x] += m[jp][threadIdx.x];
-
-		LLRout[i] = mvc_temp[threadIdx.x]<0;
+		__syncthreads();
 	}
-	__syncthreads();
 
-	if( threadIdx.y < sumX1[i] )
-		mvc[i + threadIdx.y*nvar] = mvc_temp[threadIdx.x] - m[threadIdx.y][threadIdx.x];
-	__syncthreads();
 
+	if( threadIdx.x == 0 )
+		SCache[blockIdx.x] = s_powAlpha[0];
+	__syncthreads();
 }
 
 
@@ -103,13 +69,10 @@ bool driverErrorDetection::launch()
 		d_output, d_mvc );
 #else
 
-	dim3 block( SIZE_BLOCK );
-	dim3 grid( (nvar + block.x - 1) / block.x );
+	dim3 block(BLOCK_DIM);
+	dim3 grid( (m_nCodeword+BLOCK_DIM-1)/BLOCK_DIM );
 
-	updateVariableNodeOpti_kernel<<< grid, block >>>( nvar, ncheck, 
-		d_sumX1, d_mcv, d_iind, d_input, 
-		d_output, d_mvc, 
-		nmaxX1, nmaxX2, N_FRAME );
+	error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, 0, MAXN, m_nCodeword );
 
 #endif
 
@@ -119,29 +82,17 @@ bool driverErrorDetection::launch()
 
 bool driverErrorDetection::verify()
 {
-	cudaMemcpy( mvc, d_mvc, nvar * nmaxX1 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
-	cudaMemcpy( output, d_output, nvar * sizeof(char) * N_FRAME, cudaMemcpyDeviceToHost );
-
-	// mvc
-	int i = 0;
-	for ( ; i < nvar * nmaxX1 * N_FRAME; i++ )
-	{
-		if ( ref_mvc[i] != mvc[i] )
-			break;
-	}
-
-	if ( i < nvar * nmaxX1 * N_FRAME )
-		return false;
+	cudaMemcpy( SCache, d_SCache, m_nGrid * sizeof(int), cudaMemcpyDeviceToHost );
 
 	// output
-	int j = 0;
-	for ( ; j < nvar * N_FRAME; j++ )
+	int i = 0;
+	for ( ; i < m_nGrid; i++ )
 	{
-		if ( ref_output[j] != output[j] )
+		if ( ref_SCache[i] != SCache[i] )
 			break;
 	}
 
-	if ( j < nvar * N_FRAME )
+	if ( i < m_nGrid )
 		return false;
 
 	return true;
@@ -160,40 +111,28 @@ void 	readArray(T* pArray, int nSize, char* strFileName)
 	fclose(fp);
 }
 
-void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename)
+void	readFile(int& nCodeword, int& nAlpha, int& nGrid, int &nMax, char* filename)
 {
 	FILE* fp;
 	fp = fopen( filename, "rb" );
 	if( !fp )
 		return;
 
-	fread( &nvar, sizeof(int), 1, fp );
-	fread( &ncheck, sizeof(int), 1, fp );
-	fread( &nmaxX1, sizeof(int), 1, fp );
-	fread( &nmaxX2, sizeof(int), 1, fp );
+	fread( &nCodeword, sizeof(int), 1, fp );
+	fread( &nAlpha, sizeof(int), 1, fp );
+	fread( &nGrid, sizeof(int), 1, fp );
+	fread( &nMax, sizeof(int), 1, fp );
 
 	fclose( fp );
 }
 
 driverErrorDetection::driverErrorDetection( )
 {
-	readFile( nvar, ncheck, nmaxX1, nmaxX2, "../data/ldpcSize.txt" );
-
-	sumX1 = (int*)malloc(nvar * sizeof(int));
-	iind = (int*)malloc(nvar * nmaxX1 * sizeof(int));
-	mvc = (int*)malloc(nvar * nmaxX1 * sizeof(int) * N_FRAME);
-	mcv = (int*)malloc(ncheck * nmaxX2 * sizeof(int) * N_FRAME);
-	input = (int*)malloc(nvar * sizeof(int) * N_FRAME);
-	output = (char*)malloc(nvar * sizeof(char) * N_FRAME);
-
-	ref_mvc = (int*)malloc(nvar * nmaxX1 * sizeof(int) * N_FRAME);
-	ref_output = (char*)malloc(nvar * sizeof(char) * N_FRAME);
-	
 	ifstream  testfile;
-	testfile.open( "../data/sumX1.txt" );
+	testfile.open( "../data/bchSize.txt" );
 	if ( testfile == NULL )
 	{
-		cout << "Missing ldpc code parameter file - \"sumX1.txt\" in data path!" << endl ;
+		cout << "Missing ldpc code parameter file - \"bchSize.txt\" in data path!" << endl ;
 		return ;
 	}
 	else
@@ -202,59 +141,40 @@ driverErrorDetection::driverErrorDetection( )
 	}
 	testfile.close();
 
-	readArray( sumX1, nvar, "../data/sumX1.txt" );
+	readFile( m_nCodeword, m_nAlpha, m_nGrid, MAXN, "../data/bchSize.txt" );
 
-	readArray( iind, nvar * nmaxX1, "../data/iind.txt" );
+	codeword = (char*)malloc(m_nCodeword * sizeof(char));
+	powAlpha = (int*)malloc(m_nAlpha  * sizeof(int));
+	SCache = (int*)malloc(m_nGrid * sizeof(int) * N_FRAME);
 
-	readArray( ref_output, nvar, "../data/output.txt" );
-
-	readArray( input, nvar, "../data/input.txt" );
-
-	readArray( mcv, ncheck * nmaxX2, "../data/mcv.txt" );	
-
-	readArray( ref_mvc, nvar * nmaxX1, "../data/mvc.txt" );		
-
-	for( int i = 0; i < N_FRAME; i ++ )
-	{
-		memcpy( ref_output + i * nvar, ref_output,  nvar * sizeof(char) );
-		memcpy( input + i * nvar, input,  nvar * sizeof(int) );
-		memcpy( mcv + i * ncheck * nmaxX2, mcv,  ncheck * nmaxX2 * sizeof(int) );
-		memcpy( ref_mvc + i * nvar * nmaxX1, ref_mvc,  nvar * nmaxX1 * sizeof(int) );
-	}
-
-	cudaMalloc( (void**)&d_sumX1, nvar * sizeof(int) );		// const 64 K
-	cudaMemcpy( d_sumX1, sumX1, nvar * sizeof(int), cudaMemcpyHostToDevice );
-
-	cudaMalloc( (void**)&d_iind, nvar * nmaxX1 * sizeof(int) );		// const 1.2 M
-	cudaMemcpy( d_iind, iind, nvar * nmaxX1 * sizeof(int), cudaMemcpyHostToDevice );
-
-	cudaMalloc( (void**)&d_mcv, ncheck * nmaxX2 * sizeof(int) * N_FRAME );
-	cudaMemcpy( d_mcv, mcv, ncheck * nmaxX2 * sizeof(int) * N_FRAME, cudaMemcpyHostToDevice );
-
-	cudaMalloc( (void**)&d_input, nvar * sizeof(int) * N_FRAME );
-	cudaMemcpy( d_input, input, nvar * sizeof(int) * N_FRAME, cudaMemcpyHostToDevice );
+	ref_SCache = (int*)malloc(m_nGrid * sizeof(int) * N_FRAME);
 	
-	cudaMalloc( (void**)&d_output, nvar * sizeof(char) * N_FRAME );
-	cudaMemset( d_output, 0, nvar * sizeof(char) * N_FRAME );
+	readArray( codeword, m_nCodeword, "../data/codeword.txt" );		
+	readArray( powAlpha, m_nAlpha, "../data/powAlpha.txt" );
+	readArray( ref_SCache, m_nGrid, "../data/SCache.txt" );  
 
-	cudaMalloc( (void**)&d_mvc, nvar * nmaxX1 * sizeof(int) * N_FRAME );
-	cudaMemset( d_mvc, 0, nvar * nmaxX1 * sizeof(int) * N_FRAME );
+	cudaMalloc( (void**)&d_codeword, m_nCodeword*sizeof(char) );
+	cudaMemcpy( d_codeword, codeword, m_nCodeword*sizeof(char), cudaMemcpyHostToDevice );
+
+	cudaMalloc( (void**)&d_powAlpha, m_nAlpha*sizeof(int) );
+	cudaMemcpy( d_powAlpha, powAlpha, m_nAlpha * sizeof(int), cudaMemcpyHostToDevice );
+
+	cudaMalloc( (void**)&d_SCache, m_nGrid*sizeof(int) );
+	cudaMemset( d_SCache, 0, m_nGrid*sizeof(int) );
 
 }
 
 driverErrorDetection::~driverErrorDetection()
 {
 	// host
-	free(sumX1);
-	free(iind);	
-	free(mvc);		free(mcv);
-	free(input);	free(output);
+	free(powAlpha);
+	free(SCache);
+	free(codeword);
 
-	free(ref_mvc);	free(ref_output);
+	free(ref_SCache);
 
 	// device
-	cudaFree( d_sumX1 );
-	cudaFree( d_iind );	
-	cudaFree( d_mvc );		cudaFree( d_mcv );
-	cudaFree( d_input );	cudaFree( d_output );
+	cudaFree( d_powAlpha );
+	cudaFree( d_SCache );	
+	cudaFree( d_codeword );
 }
