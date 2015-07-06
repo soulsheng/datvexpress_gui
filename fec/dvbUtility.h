@@ -29,7 +29,7 @@
 #define		SHORT_BCH			0
 #define		MOD_TYPE_DEFAULT	4
 
-#define		WRITE_FILE_FOR_DRIVER	1
+#define		WRITE_FILE_FOR_DRIVER	0
 
 #include <itpp/itcomm.h>
 #include <iostream>

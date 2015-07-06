@@ -56,7 +56,7 @@ void main()
 	StopWatchInterface	*timerStep;
 	sdkCreateTimer( &timerStep );
 
-#if 0
+#if 1
 	int i = 0;
 #else
 	for ( int i = 0;i<nFrameCount;i++ )
