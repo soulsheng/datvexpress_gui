@@ -431,6 +431,8 @@ BCH_BM::BCH_BM()
 	// Galois Field Creation
 	gfField(mShort, 32+8+2+1, powAlphaShort, indexAlphaShort);
 
+	el = (int*) calloc(MAXT*2,sizeof(int));
+	reg = (int*)calloc(MAXR,sizeof(int));
 }
 
 BCH_BM::~BCH_BM()
@@ -440,8 +442,6 @@ BCH_BM::~BCH_BM()
 
 void BCH_BM::initialize()
 {
-	el = (int*) calloc(MAXT*2,sizeof(int));
-	reg = (int*)calloc(MAXR,sizeof(int));
 }
 
 void BCH_BM::release()
