@@ -13,6 +13,7 @@
 #include "helper_timer.h"
 #define		TIME_STEP		6	
 #define		MESSAGE_AS_TAIL	1	// 信息位在结尾
+#define		OUTPUT_ERROR_POSITION	0
 
 int BCH_BM::lfsr(unsigned long int *seed)
 {
@@ -497,15 +498,19 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 		sdkStartTimer( &timerStep );
 
 		bool success = true;
-		fprintf(stdout,"\nPosition of errors detected:\n");
+		vector<int> errors;
 		for(int i = 0; i <MAXT; i++) 
 		{
 			if ( -1 != el[i] )
 			{
 				codeword[ el[i] ] ^= 1;
-				fprintf(stdout,"%d\t",el[i]);
+				errors.push_back( el[i] );
 			}
 		}
+#if OUTPUT_ERROR_POSITION
+		fprintf(stdout,"\nPosition of errors detected:\n");
+		for (int i=0;i<errors.size();i++)
+			fprintf(stdout,"%d\t",errors[i]);
 
 		if(success) {
 		fprintf(stdout,"\nSuccessful decoding!\n----------------------\n");};
@@ -515,7 +520,7 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
-
+#endif
 	}
 	else
 		fprintf(stdout,"\n\nNo errors detected!\n------------------------------\n");

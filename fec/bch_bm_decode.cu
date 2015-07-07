@@ -5,7 +5,6 @@
 #include <cuda_runtime.h>
 
 #include <stdlib.h>
-#include "dvbUtility.h"
 
 
 bch_gpu::bch_gpu()
