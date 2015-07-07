@@ -12,6 +12,7 @@
 
 #include "helper_timer.h"
 #define		TIME_STEP		6	
+#define		MESSAGE_AS_TAIL	1	// 信息位在结尾
 
 int BCH_BM::lfsr(unsigned long int *seed)
 {
@@ -398,14 +399,23 @@ void BCH_BM::printNK( char* message, char* codeword, int length )
 
 void BCH_BM::BCH_final_dec(  char* message, char* codeword )
 {
+#if MESSAGE_AS_TAIL
+	for (int i=n-1;i>=n-k;i--)
+#else
 	for (int i=0;i<k;i++)
+#endif
 		message[i] = codeword[i];
 }
 
 bool BCH_BM::verifyResult(  char* message, char* messageRef )
 {
 	bool bSuccess = true;
-	for (int i=n-1;i>=n-k;i--)	{
+#if MESSAGE_AS_TAIL
+	for (int i=n-1;i>=n-k;i--)
+#else
+	for (int i=0;i<k;i++)
+#endif
+	{
 		if( message[i] != messageRef[i])	{
 			bSuccess = false;
 			break;
