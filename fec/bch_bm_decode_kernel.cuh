@@ -10,14 +10,11 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, 
 {
 	int j = blockIdx.x * blockDim.x + threadIdx.x ;
 
-	if( j >= n )
-		return;
-
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
 	__shared__ char	s_codeword[BLOCK_DIM] ;
 
 	s_codeword[ threadIdx.x ] = codeword[ j ];
-	if(s_codeword[ threadIdx.x ])
+	if(s_codeword[ threadIdx.x ] && j<n )
   		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
