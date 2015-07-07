@@ -113,6 +113,8 @@ void encode( char* message, char* codeword);
 
 void decode( char* message, char* codeword);
 
+void simulateError( char* codeword, int nErrorCount=12 );
+
 private:
 	int *powAlphaNormal, *indexAlphaNormal;
 	const int mNormal;

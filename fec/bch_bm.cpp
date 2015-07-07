@@ -653,3 +653,12 @@ int BCH_BM::getK( )
 {
 	return k;
 }
+
+void BCH_BM::simulateError( char* codeword, int nErrorCount )
+{
+	for (int i=0;i<nErrorCount;i++)
+	{
+		int iError = rand()%n;
+		codeword[ iError ] ^= 1;
+	}
+}
