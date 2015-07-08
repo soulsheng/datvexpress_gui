@@ -365,6 +365,12 @@ void BCH_BM::BerlMass( )
 /**************    Chien search   **************************/
 /*******************   Roots searching  ***********************/
 
+#ifdef USE_GPU
+
+	m_bch_gpu.chienSearch( lambda, el, L );
+
+#else
+
 	int kk = 0;
 	for(i = 0; i < MAXN; i++)
 	{
@@ -377,6 +383,7 @@ void BCH_BM::BerlMass( )
 	}// 2.4 ms 
 	
 
+#endif	
 
 	free(T); free(c); free(p); free(lambda); //free(el);
 
@@ -645,7 +652,7 @@ void BCH_BM::setCode( int rate, int type )
 
 #ifdef USE_GPU
 	m_bch_gpu.initialize( powAlpha, indexAlpha, mNormal, 
-		S, nS, n, tCapacity, MAXN );
+		S, nS, n, tCapacity, MAXN, MAXT );
 #endif
 }
 

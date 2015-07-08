@@ -5,6 +5,8 @@
 #include <cuda_runtime.h>
 
 #include <stdlib.h>
+#include <iostream>
+using namespace std;
 
 
 bch_gpu::bch_gpu()
@@ -20,12 +22,13 @@ bch_gpu::~bch_gpu()
 
 void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal, 
 							int *S, int nS, 
-							int n, int tCapacity, int MAXN )
+							int n, int tCapacity, int MAXN, int tMax )
 {
 	m_nAlphaSize = 1<<mNormal;
 	m_nSSize = nS;
 	this->n = n;
 	this->tCapacity = tCapacity;
+	this->tMax = tMax;
 
 	cudaMalloc( (void**)&d_powAlpha, m_nAlphaSize*sizeof(int) );
 	cudaMalloc( (void**)&d_indexAlpha, m_nAlphaSize*sizeof(int) );
@@ -40,6 +43,14 @@ void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal,
 	
 	cudaMalloc( (void**)&d_SCache, BLOCK_DIM*sizeof(int) );
 	cudaMemset( d_SCache, 0, BLOCK_DIM*sizeof(int) );
+
+	cudaMalloc( (void**)&d_lambda, tCapacity*2*sizeof(int));
+	
+	cudaMalloc( (void**)&d_el, tMax*2*sizeof(int));
+	cudaMemset( d_el, -1, tMax*2*sizeof(int) );
+	
+	cudaMalloc( (void**)&d_kk, 1*sizeof(int));
+	cudaMemset( d_kk, 0, 1*sizeof(int) );
 
 	m_SCache = (int*) calloc(BLOCK_NUM_MAX,sizeof(int));
 
@@ -56,6 +67,10 @@ void bch_gpu::release()
 	cudaFree( d_S );
 
 	cudaFree( d_codeword );
+
+	cudaFree( d_lambda ); 
+	cudaFree( d_el );
+	cudaFree( d_kk );
 }
 
 
@@ -102,4 +117,18 @@ bool bch_gpu::error_detection( char* codeword )
 	}
 
 	return syn;
+}
+
+void bch_gpu::chienSearch( int* lambda, int* el, int L )
+{
+
+	// 0.6 ms 
+	cudaMemcpy( d_lambda, lambda, tCapacity * 2 * sizeof(int), cudaMemcpyHostToDevice );
+
+	dim3 block( BLOCK_DIM );
+	dim3 grid( (MAXN + BLOCK_DIM - 1)/BLOCK_DIM );
+	chien_search_kernel<<< grid, block >>>( d_powAlpha, d_lambda, d_el, d_kk, L, MAXN );
+
+	cudaMemcpy( el, d_el, tMax * 2 * sizeof(int), cudaMemcpyDeviceToHost );
+
 }

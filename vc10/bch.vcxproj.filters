@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\fec\bch_bm.cpp" />
+    <ClCompile Include="mainBch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\fec\bch_bm.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cuda">
+      <UniqueIdentifier>{a0ad115b-e718-4be4-8d58-fdebb835f334}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\fec\bch_bm_decode.cuh">
+      <Filter>cuda</Filter>
+    </None>
+    <None Include="..\fec\bch_bm_decode_kernel.cuh">
+      <Filter>cuda</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\fec\bch_bm_decode.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>
