@@ -55,6 +55,7 @@ protected:
 	void demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits );
 	float get_rate();
 	void decode_soft( scmplx* sym, double N0 );
+	void configFormatByTypeModcod( u8 type, u8 modcod ); 
 
 private:
 	u8	msg[FRAME_SIZE_NORMAL/8];
@@ -82,6 +83,8 @@ private:
 
 	scmplx	m_Symbols[M_CONST_NUMBER][32] ;
 
+	u8		m_typeLast, m_modcodLast;
+	bool	m_bNeedUpdateCode;
 };
 
 #endif

@@ -22,7 +22,11 @@ int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
 	// decode the header
 	s2_pl_header_decode();
 
-	set_configure();
+	if ( m_bNeedUpdateCode )
+	{
+		set_configure();
+		m_bNeedUpdateCode = false;
+	}
 
 	// Now apply the scrambler to the data part not the header
 	pl_scramble_decode( &m_pl[90], m_payload_symbols );
@@ -158,6 +162,21 @@ void DVBS2_DECODE::s2_pl_header_decode()
 	// check the mode and code
 	s2_pl_header_decode( &modcod, &type, &b[26] );
 
+	if( m_typeLast != type || m_modcodLast !=modcod )
+		m_bNeedUpdateCode = true;
+	else
+		m_bNeedUpdateCode = false;
+
+	m_typeLast = type;
+	m_modcodLast = modcod;
+	configFormatByTypeModcod(type, modcod);
+
+
+	return;
+}
+
+void DVBS2_DECODE::configFormatByTypeModcod( u8 type, u8 modcod ) 
+{
 
 	if( type&0x02 )
 		m_format[0].frame_type = FRAME_SHORT;
@@ -625,6 +644,12 @@ DVBS2_DECODE::DVBS2_DECODE()
 	
 	pSymbolsTemplate = NULL;
 	nSymbolSize = -1;
+
+	m_typeLast = FRAME_NORMAL;
+	m_modcodLast = 24;//	M_32APSK  CR_3_4
+	m_bNeedUpdateCode = true;
+
+	configFormatByTypeModcod( m_typeLast, m_modcodLast );
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -857,6 +882,9 @@ void DVBS2_DECODE::initialize()
 #ifdef USE_GPU
 	m_ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0]);
 #endif
+
+	set_configure();
+
 }
 
 void DVBS2_DECODE::s2_i2b()
