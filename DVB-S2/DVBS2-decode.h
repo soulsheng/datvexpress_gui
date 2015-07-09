@@ -15,6 +15,7 @@
 #define PACKET_SIZE		188
 
 #define		EBNO			2.6//10 2-2.2	3-5.6	4-8.9	5-12.4
+#define		FRAME_CACHE_SIZE	10
 
 class DVBS2_DECODE : public DVBS2
 {
@@ -23,8 +24,9 @@ public:
 	~DVBS2_DECODE();
 
 	int decode_ts_frame( scmplx* pl );	// c m_pl[]	->	B ts[]
+	int decode_ts_frame( scmplx* pl, int nMulti );	// c m_pl[]	->	B ts[]
 
-	unsigned char* getByte();
+	unsigned char* getByte(int nFrame);
 
 	void initialize();
 
@@ -38,7 +40,7 @@ protected:
 	void ldpc_decode();
 	void bch_decode();
 	void bb_randomise_decode();
-	void transport_packet_decode_crc( Bit* b );
+	void transport_packet_decode_crc( Bit* b, int nFrame=0 );
 	bool decode_bbheader();
 
 	int	checkSOF(int* sof, int n);
@@ -58,7 +60,7 @@ protected:
 	void configFormatByTypeModcod( u8 type, u8 modcod ); 
 
 private:
-	u8	msg[FRAME_SIZE_NORMAL/8];
+	u8	msg[FRAME_CACHE_SIZE][FRAME_SIZE_NORMAL/8];
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];

@@ -56,31 +56,29 @@ void main()
 	StopWatchInterface	*timerStep;
 	sdkCreateTimer( &timerStep );
 
-#if 1
-	int i = 0;
-#else
-	for ( int i = 0;i<nFrameCount;i++ )
-#endif
 	{
 	
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
 	 
-	m_dvbs2_dec->decode_ts_frame( pl + i*FRAME_SIZE_NORMAL );
+	m_dvbs2_dec->decode_ts_frame( pl, nFrameCount );
 
 	sdkStopTimer( &timerStep );
-	float fTime =sdkGetTimerValue( &timerStep ) ;
+	float fTime =sdkGetTimerValue( &timerStep )/nFrameCount ;
 	
 	int nSymbol = m_dvbs2_dec->s2_get_n_symbol();
 
 	printf("decode time : %f \n", fTime );	// 27 ms, 529(d)
 	printf("decode speed : %f MBd/s \n", nSymbol/fTime * 0.001f );
 
+	for ( int i = 0;i<nFrameCount;i++ )
+	{
 	//print( m_dvbs2_dec->getByte() );
-	if( verify( m_dvbs2_dec->getByte() ) )
+	if( verify( m_dvbs2_dec->getByte(i) ) )
 		printf("succeed \n");
 	else
 		printf("failed \n");
+	}
 	}
 
 	delete	m_dvbs2_dec;

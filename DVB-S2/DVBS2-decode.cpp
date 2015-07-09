@@ -548,16 +548,16 @@ void DVBS2_DECODE::bb_randomise_decode()
 	}
 }
 
-void DVBS2_DECODE::transport_packet_decode_crc( Bit* b )
+void DVBS2_DECODE::transport_packet_decode_crc( Bit* b, int nFrame )
 {
-	memset( msg, 0, sizeof(u8)*FRAME_SIZE_NORMAL/8 );
+	memset( msg[nFrame], 0, sizeof(u8)*FRAME_SIZE_NORMAL/8 );
 
 	int nByteCount = m_format[0].bb_header.dfl/8;
 	for( int i = 0; i < nByteCount; i++ )
 	{	
 		for( int n = 7; n >= 0; n-- )
 		{
-			msg[i] += m_frame[m_frame_offset_bits++] << n;
+			msg[nFrame][i] += m_frame[m_frame_offset_bits++] << n;
 		}
 	}
 }
@@ -756,9 +756,9 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 	}
 }
 
-unsigned char* DVBS2_DECODE::getByte()
+unsigned char* DVBS2_DECODE::getByte(int nFrame)
 {
-	return msg;
+	return msg[nFrame];
 }
 
 void DVBS2_DECODE::demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits )
@@ -986,4 +986,54 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 		for (int j=0;j<nConstellationType;j++)
 			m_frame[i*nConstellationType+j] = m_bitLDPC[i*nConstellationType+j];
 
+}
+
+int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
+{
+
+	int res = 0;
+
+	for ( int i = 0;i<nMulti;i++ ) {
+
+		memcpy_s( this->m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
+			pl+ i*FRAME_SIZE_NORMAL, sizeof(scmplx)*FRAME_SIZE_NORMAL);
+
+		// decode the header
+		s2_pl_header_decode();
+
+		if ( m_bNeedUpdateCode )
+		{
+			set_configure();
+			m_bNeedUpdateCode = false;
+		}
+
+		// Now apply the scrambler to the data part not the header
+		pl_scramble_decode( &m_pl[90], m_payload_symbols );
+
+		// decode the data
+#ifndef USE_GPU
+		decode_soft( &m_pl[90], N0 );
+#else	
+		m_ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
+			m_frame, m_format[0].code_rate,
+			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 1.8 ms
+#endif
+
+		// BCH encode the BB Frame
+		bch_decode();
+
+		// Yes so now Scramble the BB frame
+		bb_randomise_decode();
+
+		// New frame needs to be sent
+		decode_bbheader(); // Add the header
+
+		m_frame_offset_bits += 8; // crc
+
+		// Add a new transport packet
+		transport_packet_decode_crc( m_frame, i );
+
+	}
+
+	return res;
 }
