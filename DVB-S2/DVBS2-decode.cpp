@@ -94,7 +94,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 #else	
 		m_ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
 			m_frame, m_format[0].code_rate,
-			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 1.8 ms
+			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 2.8 ms
 #endif
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
@@ -108,7 +108,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	bch_decode();
 
 	sdkStopTimer( &timerStep );
-	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 4.5 ms 
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 1.6 ms 
 
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
