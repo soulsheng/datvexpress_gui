@@ -4,7 +4,7 @@
 #include "helper_timer.h"
 #define		TIME_STEP		6	
 
-int DVBS2_DECODE::s2_decode_ts_frame( scmplx* pl )
+int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 {
 	vec			timerStepValue(TIME_STEP);
 

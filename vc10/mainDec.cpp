@@ -66,7 +66,7 @@ void main()
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
 	 
-	m_dvbs2_dec->s2_decode_ts_frame( pl + i*FRAME_SIZE_NORMAL );
+	m_dvbs2_dec->decode_ts_frame( pl + i*FRAME_SIZE_NORMAL );
 
 	sdkStopTimer( &timerStep );
 	float fTime =sdkGetTimerValue( &timerStep ) ;
