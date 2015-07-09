@@ -349,9 +349,9 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 	// step	1:	inverse map constellation
 	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );// 0.11 ms
 
-	dim3 block( 256 );
+	dim3 block( 1024/M );
 	dim3 grid;
-	grid.x = (nPayloadSymbols + 255)/256;
+	grid.x = (nPayloadSymbols + block.x-1)/block.x;
 
 	block.y = M;
 	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*32, M, d_pDist2, CP );// 0.006 ms
@@ -377,6 +377,10 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 	// step	4:	cast type, char -> int
 	for( int i = 0; i < nvar; i++ )
 		pFrame[i] = p_bitLDPC[i];
+
+	ce = cudaGetLastError();
+	if( cudaSuccess != ce )
+		cout << "bp_decode_once cudaGetLastError = " << ce << endl;
 
 	return 0;
 }
