@@ -16,7 +16,7 @@ void updateCheckNode_gpu( );
 
 void initializeMVC_gpu( );
 
-bool check_parity_cpu(char *LLR);
+bool check_parity_cpu(char *LLRN, int nFrame=1);
 
 public:
 int bp_decode(int *LLRin, int *LLRout,
@@ -37,6 +37,10 @@ int bp_decode_once(char *LLRout, int code_rate,
 int bp_decode_once(itpp::vec& softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximum number of iterations
 
+int bp_decode_once(char *LLRout, int code_rate, int nMulti, 
+	int *LLRin = NULL, 
+	bool psc = true,			//!< check syndrom after each iteration
+	int max_iters = 50 );		//!< Maximum number of iterations
 
 int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 	int *pFrame, int code_rate, 
@@ -57,7 +61,7 @@ int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 		* \param	Dint1/2/3		参数输入：同对数似然比class LLR_calc_unit
 		* \param	logexp_table	参数输入：对数似然比查找表
 	*/
-	bool	initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols );
+	bool	initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols, int nMultiMax );
 	void	updateSymbolsTemplate( scmplx* psymbols );
 
 	~ldpc_gpu();
@@ -107,4 +111,7 @@ private:
 
 	int*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
 	int*	h_LLRin;
+
+	int		m_nMultiMax;
+
 };

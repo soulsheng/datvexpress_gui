@@ -669,7 +669,8 @@ DVBS2_DECODE::DVBS2_DECODE()
 
 	configFormatByTypeModcod( m_typeLast, m_modcodLast );
 
-	m_frameMulti = new Bit[FRAME_CACHE_SIZE * FRAME_SIZE_NORMAL];
+	m_nMulti = FRAME_CACHE_SIZE;
+	m_frameMulti = new Bit[ m_nMulti * FRAME_SIZE_NORMAL];
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
@@ -906,7 +907,7 @@ void DVBS2_DECODE::initialize()
 
 	bch.initialize();
 #ifdef USE_GPU
-	m_ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0]);
+	m_ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0], m_nMulti);
 #endif
 
 	set_configure();

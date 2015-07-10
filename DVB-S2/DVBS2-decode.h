@@ -64,7 +64,7 @@ private:
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
-	char	m_bitLDPC[FRAME_SIZE_NORMAL];
+	char	m_bitLDPC[FRAME_CACHE_SIZE*FRAME_SIZE_NORMAL];
 	char	m_bitBCH[FRAME_SIZE_NORMAL];
 
 	ldpc_decoder	ldpc;

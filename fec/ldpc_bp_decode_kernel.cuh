@@ -252,30 +252,42 @@ void updateCheckNodeShared_kernel( const int ncheck, const int nvar,
 __global__ 
 void initializeMVC_kernel(const int nvar, 
 	const int* sumX1,
-	const int* LLRin,
-	int* mvc) 
+	const int* LLRinN,
+	int* mvcN, int nmaxX1, int nFrame) 
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if( i>= nvar )
 		return;
 
+	for( int frame = 0; frame < nFrame; frame ++ ){
+    const int* LLRin = LLRinN + frame * nvar;
+	int* mvc = mvcN + frame * nvar * nmaxX1;
+
 	int index = i;
     for (int j = 0; j < sumX1[i]; j++) {
       mvc[index] = LLRin[i];
       index += nvar;
     }
+
+	}
 }
 
 __global__ 
-void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int* sumX1, const int* mcv, const int* iind, const int * LLRin, 
-	char * LLRout, int* mvc ) // not used, just for testing performance bound
+void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int* sumX1, const int* mcvN, const int* iind, const int * LLRinN, 
+	const int nmaxX1, const int nmaxX2, const int nFrame, 
+	char * LLRoutN, int* mvcN ) // not used, just for testing performance bound
 {	//	mcv const(input)-> mvc (output)
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	
 	if( i>= nvar )
 		return;
 	
+	for( int frame = 0; frame < nFrame; frame ++ ){
+    const int* LLRin = LLRinN + frame * nvar;
+ 	int* mvc = mvcN + frame * nvar * nmaxX1;
+	const int* mcv = mcvN + frame * ncheck * nmaxX2;
+    char* LLRout = LLRoutN + frame * nvar;
 
 	int mvc_temp = LLRin[i];
 
@@ -294,15 +306,17 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 	for (int jp = 0; jp < sumX1[i]; jp++)
 			mvc[i + jp*nvar] = mvc_temp - m[jp];
 
+	}
 }
 
 
 __global__ 
 void updateCheckNodeOpti_kernel( const int ncheck, const int nvar, 
-	const int* sumX2, const int* mvc, const int* jind, int* logexp_table, 
+	const int* sumX2, const int* mvcN, const int* jind, int* logexp_table, 
 	const short int Dint1, const short int Dint2, const short int Dint3, 
 	const int QLLR_MAX,
-	int* mcv )
+	const int nmaxX1, const int nmaxX2, const int nFrame, 
+	int* mcvN )
 {	//	mvc const(input)-> mcv (output)
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -321,6 +335,11 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	int ml[MAX_LOCAL_CACHE];//int* ml	= d_ml	+ j * max_cnd;
 	int mr[MAX_LOCAL_CACHE];//int* mr	= d_mr	+ j * max_cnd;
 	int m[MAX_LOCAL_CACHE];
+
+	
+	for( int frame = 0; frame < nFrame; frame ++ ) {
+ 	const int* mvc = mvcN + frame * nvar * nmaxX1;
+	int* mcv = mcvN + frame * ncheck * nmaxX2;
 
 	switch( sumX2[j] )
 	{
@@ -383,6 +402,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	}
 	}// default
 	}//switch
+	}//for
 }
 
 
@@ -421,13 +441,19 @@ void updateVariableNodeOpti2D_kernel( const int nvar, const int ncheck, const in
 }
 
 __global__
-void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2, 
-	int scale)
+void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2N, 
+	int scale, int n, int nFrame )
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	int j = threadIdx.y;
 
-	scmplx symIn = sym[i];
+	if( i>=n )
+		return;
+
+	for( int frame = 0; frame < nFrame; frame ++ )	{
+
+	float *dist2 = dist2N + frame*M*n; 
+	scmplx symIn = sym[i + frame * n];
 
 	//for (int j = 0; j < M; j++) 
 	{
@@ -439,6 +465,8 @@ void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2,
 		dist2Val /= scale*scale;
 
 		dist2[i*M+j] = dist2Val;
+
+	}
 
 	}
 }
@@ -465,11 +493,19 @@ int to_qllr(double l, int Dint1, const int QLLR_MAX)
 
 #if 1
 __global__
-void soft_bit_kernel(float *m_pDist2, int *p_soft_bits_cache, int k, int M, float N0, 
-	int Dint1, const int QLLR_MAX)
+void soft_bit_kernel(float *m_pDist2N, int *p_soft_bits_cacheN, int k, int M, float N0, 
+	int Dint1, const int QLLR_MAX, int n, int nFrame )
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = threadIdx.y;
+
+	if( index>=n )
+		return;
+
+	for( int frame = 0; frame < nFrame; frame ++ )	{
+
+	float *m_pDist2 = m_pDist2N + frame*M*n;
+	int *p_soft_bits_cache = p_soft_bits_cacheN + frame*k*n;
 
 	double d0min, d1min, temp;
 
@@ -499,15 +535,22 @@ void soft_bit_kernel(float *m_pDist2, int *p_soft_bits_cache, int k, int M, floa
 			p_soft_bits_cache[index*k + i] = to_qllr( l, Dint1, QLLR_MAX );
 
 		}
+
+	}
 }
 #endif
 __global__
-void reorder_kernel(int *p_soft_bits, int *p_soft_bits_cache, int k, int nPayloadSymbols)
+void reorder_kernel(int *p_soft_bitsN, int *p_soft_bits_cacheN, int k, int nPayloadSymbols, int nFrame )
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int j = threadIdx.y;
 	//for (int j = 0;j < k; j++) 
+	for( int frame = 0; frame < nFrame; frame ++ )
+
 	{
+		int *p_soft_bits = p_soft_bitsN + frame*k*nPayloadSymbols;
+		int *p_soft_bits_cache = p_soft_bits_cacheN + frame*k*nPayloadSymbols;
+
 		p_soft_bits[j*nPayloadSymbols+index] = p_soft_bits_cache[index*k+j];	
 	}
 }

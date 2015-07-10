@@ -41,11 +41,11 @@ struct LDPC_DATA_GPU
 	int* d_logexp_table ;
 
 	short int Dint1, Dint2, Dint3;	//! Decoder (lookup-table) parameters
-
+	int  nMulti;
 	int* h_V, *h_sumX2;
 	int* h_mcv, *h_mvc ;
 
-	LDPC_DATA_GPU( LDPC_Code* pCode );
+	LDPC_DATA_GPU( LDPC_Code* pCode, int nMulti );
 	~LDPC_DATA_GPU();
 
 	LDPC_Code* pldpc;
@@ -114,7 +114,7 @@ public:
 		* \return 	从调试器工厂查找匹配的解调器
 	*/
 	LDPC_DATA_GPU* findLDPC_DATA(int code_rate);
-	void	initialize(LDPC_CodeFactory* pCodes);
+	void	initialize(LDPC_CodeFactory* pCodes, int nMulti);
 
 protected:
 private:

@@ -62,6 +62,7 @@ using namespace std;
 #define M_16APSK 2
 #define M_32APSK 3
 #define M_CONST_NUMBER	 4
+#define M_SYMBOL_SIZE_MAX (1<<5)//32
 
 enum Rolloff_Factor
 {

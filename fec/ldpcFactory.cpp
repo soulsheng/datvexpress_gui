@@ -185,22 +185,22 @@ LDPC_DATA_GPU* LDPC_DataFactory_GPU::findLDPC_DATA( int code_rate )
 		return NULL;
 }
 
-void LDPC_DataFactory_GPU::initialize( LDPC_CodeFactory* pCodes )
+void LDPC_DataFactory_GPU::initialize( LDPC_CodeFactory* pCodes, int nMulti )
 {
 	for (int i=0; i<CODE_RATE_COUNT; i++)
 	{
 		LDPC_Code* pLDPC_Code = pCodes->findLDPC_Code(i);
 
-		LDPC_DATA_GPU* pLDPC_DATA = new LDPC_DATA_GPU( pLDPC_Code );
+		LDPC_DATA_GPU* pLDPC_DATA = new LDPC_DATA_GPU( pLDPC_Code, nMulti );
 
 		m_LDPCPool.insert( LDPC_GPUPoolPair(i, pLDPC_DATA) );
 	}
 }
 
-LDPC_DATA_GPU::LDPC_DATA_GPU( LDPC_Code* pCode )
+LDPC_DATA_GPU::LDPC_DATA_GPU( LDPC_Code* pCode, int nMulti )
 {
 	pldpc = pCode;
-
+	this->nMulti = nMulti;
 	LDPC_Code& ldpc = *pldpc;
 
 	int nmaxX1 = max(ldpc.sumX1._data(), ldpc.sumX1.size());
@@ -237,11 +237,11 @@ LDPC_DATA_GPU::LDPC_DATA_GPU( LDPC_Code* pCode )
 	cudaMalloc( (void**)&d_V, ncheck * nmaxX2 * sizeof(int) );		// const 300 K
 	cudaMemcpy( d_V, ldpc.V._data(), ncheck * nmaxX2 * sizeof(int), cudaMemcpyHostToDevice );
 
-	cudaMalloc( (void**)&d_mcv, ncheck * nmaxX2 * sizeof(int) );
-	cudaMemset( d_mcv, 0, ncheck * nmaxX2 * sizeof(int) );
+	cudaMalloc( (void**)&d_mcv, ncheck * nmaxX2 * nMulti * sizeof(int) );
+	cudaMemset( d_mcv, 0, ncheck * nmaxX2 * nMulti * sizeof(int) );
 
-	cudaMalloc( (void**)&d_mvc, nvar * nmaxX1 * sizeof(int) );
-	cudaMemset( d_mvc, 0, nvar * nmaxX1 * sizeof(int) );
+	cudaMalloc( (void**)&d_mvc, nvar * nmaxX1 * nMulti * sizeof(int) );
+	cudaMemset( d_mvc, 0, nvar * nmaxX1 * nMulti * sizeof(int) );
 
 	cudaMalloc( (void**)&d_logexp_table, Dint2 * sizeof(int) );		// const 1.2 K
 	cudaMemcpy( d_logexp_table, ldpc.llrcalc.logexp_table._data(), Dint2 * sizeof(int), cudaMemcpyHostToDevice );
