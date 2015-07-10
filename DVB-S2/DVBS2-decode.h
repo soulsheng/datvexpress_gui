@@ -31,7 +31,7 @@ public:
 	void initialize();
 
 protected:
-	void s2_pl_header_decode();	// c m_pl[90]	->	i MODCOD
+	void s2_pl_header_decode(scmplx* pl);	// c m_pl[90]	->	i MODCOD
 	int s2_demodulate_hard();	// c m_pl[>90]	->	i m_iframe
 	void s2_deinterleave();		// i m_iframe	->	b m_frame 
 	void s2_i2b();				// i m_iframe	->	b m_frame 
@@ -40,7 +40,7 @@ protected:
 	void ldpc_decode();
 	void bch_decode();
 	void bb_randomise_decode();
-	void transport_packet_decode_crc( Bit* b, int nFrame=0 );
+	void transport_packet_decode_crc();
 	bool decode_bbheader();
 
 	int	checkSOF(int* sof, int n);
@@ -51,7 +51,7 @@ protected:
 	int demodulate_hard( const scmplx& sym, scmplx* const symTemplate, int n );
 	float distance( const scmplx& cL, const scmplx& cR );
 
-	void pl_scramble_decode( scmplx *fs, int len );
+	void pl_scramble_decode( scmplx *fsn, int len );
 
 	void set_configure();
 	void demodulate_soft_bits( scmplx* sym, double N0, double* soft_bits );
@@ -87,6 +87,8 @@ private:
 
 	u8		m_typeLast, m_modcodLast;
 	bool	m_bNeedUpdateCode;
+
+	int		m_nMulti;
 };
 
 #endif

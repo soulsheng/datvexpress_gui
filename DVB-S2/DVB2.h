@@ -110,7 +110,7 @@ class DVB2{
 public:
 
 protected:
-    Bit m_frame[FRAME_SIZE_NORMAL];
+    Bit *m_frame, *m_frameMulti;
     DVB2FrameFormat m_format[2];
     Bit m_padding[PADDING_LENGTH];
         int m_frame_offset_bits;

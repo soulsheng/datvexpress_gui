@@ -41,7 +41,7 @@ int bp_decode_once(double* softbits, char *LLRout, int code_rate );		//!< Maximu
 int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 	int *pFrame, int code_rate, 
 	double* p_soft_bits, double* p_soft_bits_cache, 
-	char* p_bitLDPC );	
+	char* p_bitLDPC, int nMulti = 1 );	
 
 	/*!
 	   * LDPC½âÂëÆ÷³õÊ¼»¯   *

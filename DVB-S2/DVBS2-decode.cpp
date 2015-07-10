@@ -20,7 +20,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	int res = 0;
 	
 	// decode the header
-	s2_pl_header_decode();
+	s2_pl_header_decode(m_pl);
 
 	if ( m_bNeedUpdateCode )
 	{
@@ -122,7 +122,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	m_frame_offset_bits += 8; // crc
 
 	// Add a new transport packet
-	transport_packet_decode_crc( m_frame );
+	transport_packet_decode_crc( );
 
 	sdkStopTimer( &timerStep );
 	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.3ms
@@ -139,15 +139,15 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	return res;
 }
 
-void DVBS2_DECODE::s2_pl_header_decode()
+void DVBS2_DECODE::s2_pl_header_decode(scmplx* pl)
 {
 	int b[90];
 
 	// BPSK modulate and add the header
 	for( int i = 0; i < 90; i++ )
 	{
-		if (	m_pl[i].im == m_bpsk[i&1][0].im
-			&&	m_pl[i].re == m_bpsk[i&1][0].re )
+		if (	pl[i].im == m_bpsk[i&1][0].im
+			&&	pl[i].re == m_bpsk[i&1][0].re )
 			b[i] = 0;
 		else
 			b[i] = 1;
@@ -526,6 +526,10 @@ void DVBS2_DECODE::ldpc_decode()
 
 void DVBS2_DECODE::bch_decode()
 {
+	for ( int j = 0;j<m_nMulti;j++ ) {
+
+	m_frame = m_frameMulti + j*FRAME_SIZE_NORMAL;
+
 	// b m_frame[n] -> b m_frame[k] 
 	if ( !m_bDecodeSoft )
 		return;
@@ -537,19 +541,31 @@ void DVBS2_DECODE::bch_decode()
 
 	for(int i=0;i<FRAME_SIZE_NORMAL;i++)
 		m_frame[i] = m_bitBCH[i];
-
+	}
 }
 
 void DVBS2_DECODE::bb_randomise_decode()
 {
+	for ( int j = 0;j<m_nMulti;j++ ) {
+
+	m_frame = m_frameMulti + j*FRAME_SIZE_NORMAL;
+
 	for( int i = 0; i < m_format[0].kbch; i++ )
 	{
 		m_frame[i] ^= m_bb_randomise[i];
 	}
+
+	}
 }
 
-void DVBS2_DECODE::transport_packet_decode_crc( Bit* b, int nFrame )
+void DVBS2_DECODE::transport_packet_decode_crc()
 {
+	for ( int nFrame = 0;nFrame<m_nMulti;nFrame++ ) {
+
+	m_frame = m_frameMulti + nFrame*FRAME_SIZE_NORMAL;
+
+	m_frame_offset_bits = 80;
+
 	memset( msg[nFrame], 0, sizeof(u8)*FRAME_SIZE_NORMAL/8 );
 
 	int nByteCount = m_format[0].bb_header.dfl/8;
@@ -559,6 +575,8 @@ void DVBS2_DECODE::transport_packet_decode_crc( Bit* b, int nFrame )
 		{
 			msg[nFrame][i] += m_frame[m_frame_offset_bits++] << n;
 		}
+	}
+
 	}
 }
 
@@ -650,11 +668,13 @@ DVBS2_DECODE::DVBS2_DECODE()
 	m_bNeedUpdateCode = true;
 
 	configFormatByTypeModcod( m_typeLast, m_modcodLast );
+
+	m_frameMulti = new Bit[FRAME_CACHE_SIZE * FRAME_SIZE_NORMAL];
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()
 {
-
+	free( m_frameMulti );
 }
 
 int DVBS2_DECODE::checkSOF( int* sof, int n )
@@ -725,11 +745,15 @@ float DVBS2_DECODE::distance( const scmplx& cL, const scmplx& cR )
 	return dist2;
 }
 
-void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
+void DVBS2_DECODE::pl_scramble_decode( scmplx *fsn, int len )
 {
 	scmplx x;
 
 	// Start at the end of the PL Header.
+
+	for ( int i = 0;i<m_nMulti;i++ ) {
+
+	scmplx *fs = fsn + i*FRAME_SIZE_NORMAL;
 
 	for( int n = 0; n < len; n++ )
 	{
@@ -753,6 +777,8 @@ void DVBS2_DECODE::pl_scramble_decode( scmplx *fs, int len )
 			fs[n].im =  x.re;
 			break;
 		}
+	}
+
 	}
 }
 
@@ -993,13 +1019,10 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
 
 	int res = 0;
 
-	for ( int i = 0;i<nMulti;i++ ) {
-
-		memcpy_s( this->m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
-			pl+ i*FRAME_SIZE_NORMAL, sizeof(scmplx)*FRAME_SIZE_NORMAL);
+	m_nMulti = nMulti;
 
 		// decode the header
-		s2_pl_header_decode();
+		s2_pl_header_decode( pl );
 
 		if ( m_bNeedUpdateCode )
 		{
@@ -1008,15 +1031,15 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
 		}
 
 		// Now apply the scrambler to the data part not the header
-		pl_scramble_decode( &m_pl[90], m_payload_symbols );
+		pl_scramble_decode( &pl[90], m_payload_symbols );
 
 		// decode the data
 #ifndef USE_GPU
 		decode_soft( &m_pl[90], N0 );
 #else	
-		m_ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
-			m_frame, m_format[0].code_rate,
-			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 1.8 ms
+		m_ldpc_gpu.decode_soft( &pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
+			m_frameMulti, m_format[0].code_rate,
+			m_soft_bits, m_soft_bits_cache, m_bitLDPC, m_nMulti );// 1.8 ms
 #endif
 
 		// BCH encode the BB Frame
@@ -1031,9 +1054,9 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
 		m_frame_offset_bits += 8; // crc
 
 		// Add a new transport packet
-		transport_packet_decode_crc( m_frame, i );
+		transport_packet_decode_crc( );
 
-	}
+	//}
 
 	return res;
 }

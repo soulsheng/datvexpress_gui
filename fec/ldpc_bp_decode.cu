@@ -340,14 +340,18 @@ float ldpc_gpu::distance( const scmplx& cL, const scmplx& cR )
 int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 	int *pFrame, int code_rate,
 	double* p_soft_bits, double* p_soft_bits_cache,
-	char* p_bitLDPC )
+	char* p_bitLDPC, int nMulti /*= 1*/ )
 {
 	m_ldpcCurrent = m_ldpcDataPool.findLDPC_DATA( code_rate );
 	nvar = m_ldpcCurrent->nvar;
 	ncheck = m_ldpcCurrent->ncheck;
 
+	for ( int j = 0;j<nMulti;j++ ) {
+
+	scmplx *sym1 = sym + j*FRAME_SIZE_NORMAL;
+
 	// step	1:	inverse map constellation
-	cudaMemcpy( d_pSymbolsIn, sym, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );// 0.11 ms
+	cudaMemcpy( d_pSymbolsIn, sym1, nPayloadSymbols * sizeof(scmplx), cudaMemcpyHostToDevice );// 0.11 ms
 
 	dim3 block( 1024/M );
 	dim3 grid;
@@ -376,7 +380,9 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 
 	// step	4:	cast type, char -> int
 	for( int i = 0; i < nvar; i++ )
-		pFrame[i] = p_bitLDPC[i];
+		pFrame[i+j*FRAME_SIZE_NORMAL] = p_bitLDPC[i];
+
+	}
 
 	cudaError_t ce = cudaGetLastError();
 	if( cudaSuccess != ce )
