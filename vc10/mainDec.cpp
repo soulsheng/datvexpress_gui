@@ -55,7 +55,6 @@ void main()
 	StopWatchInterface	*timerStep;
 	sdkCreateTimer( &timerStep );
 
-	{
 	
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
@@ -72,14 +71,13 @@ void main()
 
 	for ( int i = 0;i<nFrameCount;i++ )
 	{
-	//print( m_dvbs2_dec->getByte(i), 0, 200 );
-	int nError = verify( m_dvbs2_dec->getByte(i) );
-	if( 0 == nError )
-		printf("\nframe %d succeed to decode\n\n",i);
-	else
-		printf("\nframe %d failed to decode %d bits\n\n",i, nError);
-	printf("____________________________________________\n");
-	}
+		//print( m_dvbs2_dec->getByte(i), 0, 200 );
+		int nError = verify( m_dvbs2_dec->getByte(i) );
+		if( 0 == nError )
+			printf("\nframe %d succeed to decode\n\n",i);
+		else
+			printf("\nframe %d failed to decode %d bits\n\n",i, nError);
+		printf("____________________________________________\n");
 	}
 
 	delete	m_dvbs2_dec;
