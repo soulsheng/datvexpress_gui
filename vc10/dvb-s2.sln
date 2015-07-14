@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-updateVar", "driver-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-updateChk", "driver-updateChk.vcxproj", "{1EF43B48-F2FF-4CD6-B94C-9D96FBED6E96}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bch", "bch.vcxproj", "{9F418181-A307-4D34-823C-7539A48485F1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-chienSearch", "driver-chienSearch.vcxproj", "{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,12 +51,12 @@ Global
 		{1EF43B48-F2FF-4CD6-B94C-9D96FBED6E96}.Release|Win32.ActiveCfg = Release|Win32
 		{1EF43B48-F2FF-4CD6-B94C-9D96FBED6E96}.Release|Win32.Build.0 = Release|Win32
 		{1EF43B48-F2FF-4CD6-B94C-9D96FBED6E96}.Release|x64.ActiveCfg = Release|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|Win32.Build.0 = Debug|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|x64.ActiveCfg = Debug|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Release|Win32.ActiveCfg = Release|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Release|Win32.Build.0 = Release|Win32
-		{9F418181-A307-4D34-823C-7539A48485F1}.Release|x64.ActiveCfg = Release|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Debug|Win32.Build.0 = Debug|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Debug|x64.ActiveCfg = Debug|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|Win32.ActiveCfg = Release|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|Win32.Build.0 = Release|Win32
+		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
