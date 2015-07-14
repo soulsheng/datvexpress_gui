@@ -66,7 +66,7 @@ void main()
 	
 	int nSymbol = m_dvbs2_dec->s2_get_n_symbol();
 
-	printf("\ndecode time : %f \n", fTime );	// 27 ms, 529(d)
+	printf("\ndecode time : %.2f ms\n", fTime );	// 27 ms, 529(d) -> 4 ms
 	printf("decode speed : %f MBd/s \n\n", nSymbol/fTime * 0.001f );
 
 	for ( int i = 0;i<nFrameCount;i++ )
