@@ -15,73 +15,42 @@ using namespace std;
 #define		SIZE_BLOCK_2D_X		32
 
 #define		USE_BLOCK_2D		0
-#define		N_FRAME				20	// time scales as long as data length scales
+#define		N_FRAME				1	// time scales as long as data length scales
 
 #define		BLOCK_DIM		256
 #define		BLOCK_NUM_MAX	512
-//extern __shared__ int s_array[ ];
 
-__global__ 
-void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int i, int MAXN, int n, int nFrame )
+#define		MAXT 12         // Max corrective capacity
+
+__global__
+void chien_search_kernel( int* powAlpha, int* lambda, int* el, int* kk, int L, int MAXN )
 {
-	int j = blockIdx.x * blockDim.x + threadIdx.x ;
+	int i = blockIdx.x * blockDim.x + threadIdx.x ;
 
-	if( j >= n )
+	if( i >= MAXN )
 		return;
 
-	__shared__ int	s_powAlpha[BLOCK_DIM] ;
-	__shared__ char	s_codeword[BLOCK_DIM] ;
+	int tmp = 0;
+	
+	for(int j = 1; j <=L; j++)
+			tmp ^= powAlpha[(lambda[j]+i*j)%MAXN];
 
-	for( int frame = 0; frame < nFrame; frame ++ )	{
-
-	const char	*codeword	= n_codeword + frame * n;
-	int			*SCache		= n_SCache + frame * gridDim.x;
-
-	s_codeword[ threadIdx.x ] = codeword[ j ];
-	if(s_codeword[ threadIdx.x ])
-  		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
-	else
-		s_powAlpha[ threadIdx.x ] = 0;
-
-	__syncthreads();
-
-	for( int offset = blockDim.x / 2; offset>=1; offset /= 2 )
+	if (tmp == 1)
 	{
-		if( threadIdx.x < offset )
-				s_powAlpha[ threadIdx.x ] ^= s_powAlpha[ threadIdx.x + offset ];
-
-		__syncthreads();
-	}
-
-
-	if( threadIdx.x == 0 )
-		SCache[blockIdx.x] = s_powAlpha[0];
-	__syncthreads();
-
+		int k = atomicAdd( kk, 1 );
+		// roots inversion give the error locations
+		el[k] = (MAXN-i)%MAXN;
 	}
 }
 
-
 bool driverChienSearch::launch()
 {
-#if USE_BLOCK_2D
-	
-	dim3 block( SIZE_BLOCK_2D_X, MAX_VAR_NODE );
-	dim3 grid;
-	grid.x = (nvar * MAX_VAR_NODE + SIZE_BLOCK_2D_X * MAX_VAR_NODE - 1) 
-				/ (SIZE_BLOCK_2D_X * MAX_VAR_NODE) ;
 
-	updateVariableNodeOpti2D_kernel<<< grid, block >>>( nvar, ncheck, 
-		d_sumX1, d_mcv, d_iind, d_input, 
-		d_output, d_mvc );
-#else
+	// 0.6 ms 
 
-	dim3 block(BLOCK_DIM);
-	dim3 grid( (m_nCodeword+BLOCK_DIM-1)/BLOCK_DIM );
-
-	error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, 0, MAXN, m_nCodeword, N_FRAME );
-
-#endif
+	dim3 block( BLOCK_DIM );
+	dim3 grid( (MAXN + BLOCK_DIM - 1)/BLOCK_DIM );
+	chien_search_kernel<<< grid, block >>>( d_powAlpha, d_lambda, d_el, d_kk, L, MAXN );
 
 	cudaError_t	status = cudaGetLastError();
 	return status == cudaSuccess ;
@@ -89,17 +58,17 @@ bool driverChienSearch::launch()
 
 bool driverChienSearch::verify()
 {
-	cudaMemcpy( SCache, d_SCache, m_nGrid * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
+	cudaMemcpy( el, d_el, tMax * 2 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
 
 	// output
 	int i = 0;
-	for ( ; i < m_nGrid * N_FRAME; i++ )
+	for ( ; i < tMax * 2 * N_FRAME; i++ )
 	{
-		if ( ref_SCache[i] != SCache[i] )
+		if ( ref_el[i] != el[i] )
 			break;
 	}
 
-	if ( i < m_nGrid * N_FRAME )
+	if ( i < tMax * 2 * N_FRAME )
 		return false;
 
 	return true;
@@ -118,17 +87,18 @@ void 	readArray(T* pArray, int nSize, char* strFileName)
 	fclose(fp);
 }
 
-void	readFile(int& nCodeword, int& nAlpha, int& nGrid, int &nMax, char* filename)
+void	readFile(int& tCapacity, int& nAlpha, int& tMax, int &nMax, int &L, char* filename)
 {
 	FILE* fp;
 	fp = fopen( filename, "rb" );
 	if( !fp )
 		return;
 
-	fread( &nCodeword, sizeof(int), 1, fp );
+	fread( &tCapacity, sizeof(int), 1, fp );
 	fread( &nAlpha, sizeof(int), 1, fp );
-	fread( &nGrid, sizeof(int), 1, fp );
+	fread( &tMax, sizeof(int), 1, fp );
 	fread( &nMax, sizeof(int), 1, fp );
+	fread( &L, sizeof(int), 1, fp );
 
 	fclose( fp );
 }
@@ -136,10 +106,10 @@ void	readFile(int& nCodeword, int& nAlpha, int& nGrid, int &nMax, char* filename
 driverChienSearch::driverChienSearch( )
 {
 	ifstream  testfile;
-	testfile.open( "../data/bchSize.txt" );
+	testfile.open( "../data/chienSearchSize.txt" );
 	if ( testfile == NULL )
 	{
-		cout << "Missing ldpc code parameter file - \"bchSize.txt\" in data path!" << endl ;
+		cout << "Missing ldpc code parameter file - \"chienSearchSize.txt\" in data path!" << endl ;
 		return ;
 	}
 	else
@@ -148,32 +118,37 @@ driverChienSearch::driverChienSearch( )
 	}
 	testfile.close();
 
-	readFile( m_nCodeword, m_nAlpha, m_nGrid, MAXN, "../data/bchSize.txt" );
+	readFile( tCapacity, m_nAlpha, tMax, MAXN, L, "../data/chienSearchSize.txt" );
 
-	codeword = (char*)malloc(m_nCodeword * sizeof(char) * N_FRAME);
 	powAlpha = (int*)malloc(m_nAlpha  * sizeof(int));
-	SCache = (int*)malloc(m_nGrid * sizeof(int) * N_FRAME);
+	lambda = (int*) calloc(tCapacity*2,sizeof(int));
+	el = (int*) calloc(MAXT*2,sizeof(int));
+	ref_el = (int*) calloc(MAXT*2,sizeof(int));
 
-	ref_SCache = (int*)malloc(m_nGrid * sizeof(int) * N_FRAME);
 	
-	readArray( codeword, m_nCodeword, "../data/codeword.txt" );		
+	readArray( lambda, tCapacity*2, "../data/lambda.txt" );		
 	readArray( powAlpha, m_nAlpha, "../data/powAlpha.txt" );
-	readArray( ref_SCache, m_nGrid, "../data/SCache.txt" );  
+	readArray( ref_el, MAXT*2, "../data/el.txt" );		
 
 	for( int i = 0; i < N_FRAME; i ++ )
 	{
-		memcpy( codeword + i * m_nCodeword, codeword,  m_nCodeword * sizeof(char) );
-		memcpy( ref_SCache + i * m_nGrid, ref_SCache,  m_nGrid * sizeof(int) );
+		memcpy( lambda + i * tCapacity*2, lambda,  tCapacity*2 * sizeof(char) );
+		memcpy( ref_el + i * MAXT*2, ref_el,  MAXT*2 * sizeof(int) );
 	}
-
-	cudaMalloc( (void**)&d_codeword, m_nCodeword*sizeof(char) * N_FRAME );
-	cudaMemcpy( d_codeword, codeword, m_nCodeword*sizeof(char) * N_FRAME, cudaMemcpyHostToDevice );
 
 	cudaMalloc( (void**)&d_powAlpha, m_nAlpha*sizeof(int) );
 	cudaMemcpy( d_powAlpha, powAlpha, m_nAlpha * sizeof(int), cudaMemcpyHostToDevice );
 
-	cudaMalloc( (void**)&d_SCache, m_nGrid*sizeof(int) * N_FRAME );
-	cudaMemset( d_SCache, 0, m_nGrid*sizeof(int) * N_FRAME );
+	
+	cudaMalloc( (void**)&d_lambda, tCapacity*2*sizeof(int));
+	cudaMemcpy( d_lambda, lambda, tCapacity * 2 * sizeof(int), cudaMemcpyHostToDevice );
+
+	cudaMalloc( (void**)&d_el, tMax*2*sizeof(int));
+	cudaMemset( d_el, -1, tMax*2*sizeof(int) );
+	
+	cudaMalloc( (void**)&d_kk, 1*sizeof(int));
+	cudaMemset( d_kk, 0, 1*sizeof(int) );
+
 
 }
 
@@ -181,13 +156,14 @@ driverChienSearch::~driverChienSearch()
 {
 	// host
 	free(powAlpha);
-	free(SCache);
-	free(codeword);
+	free(lambda);
+	free(el);
 
-	free(ref_SCache);
+	free(ref_el);
 
 	// device
 	cudaFree( d_powAlpha );
-	cudaFree( d_SCache );	
-	cudaFree( d_codeword );
+	cudaFree( d_lambda );	
+	cudaFree( d_el );
+	cudaFree( d_kk );
 }

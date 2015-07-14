@@ -16,20 +16,19 @@ public:
 
 private:
 	int m_nAlpha;
-	int m_nCodeword;
-	int m_nGrid;
+	int tCapacity;
+	int tMax;
 	int MAXN;
+	int L;
 
 	// host
 	int *powAlpha;
-	int *SCache;
-	char* codeword;
-
-	int *ref_SCache;
+	int *lambda;
+	int *el;
+	int *ref_el;
 
 	// device
 	int *d_powAlpha;
-	int *d_SCache;          // Syndrome vector
-	char* d_codeword;
+	int *d_el, *d_lambda, *d_kk;
 
 };

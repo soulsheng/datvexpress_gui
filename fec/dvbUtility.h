@@ -59,6 +59,7 @@ void	readFile(int& nvar, int& ncheck, int& nmaxX1, int& nmaxX2, char* filename);
 void	writeFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 void	readFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 
+void	writeFile(std::vector<int>& paramSize, char* filename);
 
 template <typename T>
 void 	readArray(T* pArray, int nSize, char* strFileName)

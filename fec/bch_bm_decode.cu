@@ -4,10 +4,12 @@
 #include "bch_bm_decode_kernel.cuh"
 #include <cuda_runtime.h>
 
+#include <vector>
 #include <stdlib.h>
 #include <iostream>
 using namespace std;
 
+//#include "dvbUtility.h"
 
 bch_gpu::bch_gpu()
 {
@@ -131,4 +133,22 @@ void bch_gpu::chienSearch( int* lambda, int* el, int L )
 
 	cudaMemcpy( el, d_el, tMax * 2 * sizeof(int), cudaMemcpyDeviceToHost );
 
+#if WRITE_FILE_FOR_DRIVER
+	static bool bRunOnce1 = false;
+	if( !bRunOnce1 ){
+		std::vector<int> paramSize;
+		paramSize.push_back( tCapacity );
+		paramSize.push_back( m_nAlphaSize );
+		paramSize.push_back( tMax );
+		paramSize.push_back( MAXN );
+		paramSize.push_back( L );
+		//writeFile( tCapacity, m_nAlpha, tMax, MAXN, L, "../data/chienSearchSize.txt" );
+		writeFile( paramSize, "../data/chienSearchSize.txt" );
+		writeArray( lambda, tCapacity * 2, "../data/lambda.txt" );		
+		writeArray( powAlpha, m_nAlphaSize, "../data/powAlpha.txt" );
+		writeArray( el, tMax * 2, "../data/el.txt" );
+
+		bRunOnce1 = true;
+	}
+#endif
 }
