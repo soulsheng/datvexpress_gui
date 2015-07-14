@@ -43,6 +43,8 @@ void chien_search_kernel( int* powAlpha, int* lambda, int* el, int* kk, int L, i
 	if( i >= MAXN )
 		return;
 
+	int tmp = 0;
+	
 	for(int j = 1; j <=L; j++)
 			tmp ^= powAlpha[(lambda[j]+i*j)%MAXN];
 
