@@ -494,7 +494,9 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 	sdkStartTimer( &timerStep );
 
 	if( errCode ) {
-		fprintf(stdout,"Errors detected!\nDecoding by Berlekamp-Massey algorithm.....\n");
+#if OUTPUT_ERROR_POSITION
+		fprintf(stdout,"BCH Errors detected!.....\n");//Decoding by Berlekamp-Massey algorithm
+#endif
 
 		BerlMass();
 

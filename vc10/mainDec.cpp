@@ -18,7 +18,7 @@ void print(scmplx* c, int n, int nstart = 0);	// output encoded info
 template<typename T>
 void print(T* b, /*int n, */int nstart = 0, int nsize=PRINT_SIZE);		// output original info
 template<typename T>
-bool verify(T* b, /*int n, */int nstart = 0);		// verify original info
+int verify(T* b, /*int n, */int nstart = 0);		// verify original info
 int findHeader(scmplx* c, int n, int* pos);
 
 template<typename T>
@@ -28,7 +28,6 @@ void main()
 {
 	scmplx* pl = new scmplx[FRAME_SIZE_NORMAL*FRAME_CACHE_COUNT];
 	short  pBuffer[FRAME_SIZE_NORMAL*2];
-	printf("%d,%d,%d \n", sizeof(long), sizeof(int), sizeof(short) );
 
 
 	int nFrameCount = 0;
@@ -47,7 +46,7 @@ void main()
 
 	fclose( fp2 );
 
-	print( pl, PACKET_SIZE );
+	printf("\nframe count : %d ... ... \n\n", nFrameCount );	
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	m_dvbs2_dec->initialize();
@@ -68,16 +67,18 @@ void main()
 	
 	int nSymbol = m_dvbs2_dec->s2_get_n_symbol();
 
-	printf("decode time : %f \n", fTime );	// 27 ms, 529(d)
-	printf("decode speed : %f MBd/s \n", nSymbol/fTime * 0.001f );
+	printf("\ndecode time : %f \n", fTime );	// 27 ms, 529(d)
+	printf("decode speed : %f MBd/s \n\n", nSymbol/fTime * 0.001f );
 
 	for ( int i = 0;i<nFrameCount;i++ )
 	{
-	//print( m_dvbs2_dec->getByte() );
-	if( verify( m_dvbs2_dec->getByte(i) ) )
-		printf("succeed \n");
+	//print( m_dvbs2_dec->getByte(i), 0, 200 );
+	int nError = verify( m_dvbs2_dec->getByte(i) );
+	if( 0 == nError )
+		printf("\nframe %d succeed to decode\n\n",i);
 	else
-		printf("failed \n");
+		printf("\nframe %d failed to decode %d bits\n\n",i, nError);
+	printf("____________________________________________\n");
 	}
 	}
 
@@ -109,19 +110,32 @@ void print(T* b, /*int n, */int nstart/* = 0*/, int nsize)		// output original i
 
 
 template<typename T>
-bool verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
+int verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 {
-	bool bResult = true;
 	int nPrint = nstart+PRINT_SIZE;//n;
+	int nPositionFirstError = -1;
+	bool bFirstError = true;
+	int nErrorCount = 0;
 	for (int i=nstart;i<nPrint;i++)
 	{
 		if( /*i%PACKET_SIZE &&*/ (i+b[1]-1)%256 != b[i] )
 		{
-			printf("\n%d: %d \n", i, b[i] );
-			bResult = false;
+			if( bFirstError )
+			{
+				nPositionFirstError = i;
+				bFirstError = false;
+				continue;
+			}
+			
+			if( (i - nPositionFirstError)%PACKET_SIZE == 0 )
+				continue;
+
+			printf("\nerror bit [%d]=%d \n", i, b[i] );
+			printf(", the bit should be %d \n", (i+b[1]-1)%256 );
+			nErrorCount ++;
 		}
 	}
-	return bResult;
+	return nErrorCount;
 }
 
 template<typename T>
