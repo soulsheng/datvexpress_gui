@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include "dvb_types.h"
 #include "modulatorDefinition.h"
+#include "bch_bm.h"
+
 using namespace std;
 
 typedef unsigned int u32;
@@ -73,6 +75,7 @@ typedef struct{
 
 #define PADDING_LENGTH 200
 
+#define		FRAME_CACHE_COUNT	10
 
 //Interface
 #define M_ACM 0
@@ -151,6 +154,10 @@ protected:
     const static int ldpc_tab_5_6S[37][14];
     const static int ldpc_tab_8_9S[40][5];
 
+
+	char	m_bitLDPC[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
+	char	m_bitBCH[FRAME_SIZE_NORMAL];
+	BCH_BM	bch;
 
     Ldpc_encode_table m_ldpc_encode;
     void bb_randomise(void);
