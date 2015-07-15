@@ -15,7 +15,6 @@
 #define PACKET_SIZE		188
 
 #define		EBNO			2.6//10 2-2.2	3-5.6	4-8.9	5-12.4
-#define		FRAME_CACHE_SIZE	10
 
 class DVBS2_DECODE : public DVBS2
 {
@@ -60,11 +59,11 @@ protected:
 	void configFormatByTypeModcod( u8 type, u8 modcod ); 
 
 private:
-	u8	msg[FRAME_CACHE_SIZE][FRAME_SIZE_NORMAL/8];
+	u8	msg[FRAME_CACHE_COUNT][FRAME_SIZE_NORMAL/8];
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
-	char	m_bitLDPC[FRAME_CACHE_SIZE*FRAME_SIZE_NORMAL];
+	char	m_bitLDPC[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
 	char	m_bitBCH[FRAME_SIZE_NORMAL];
 
 	ldpc_decoder	ldpc;
@@ -88,7 +87,6 @@ private:
 	u8		m_typeLast, m_modcodLast;
 	bool	m_bNeedUpdateCode;
 
-	int		m_nMulti;
 };
 
 #endif

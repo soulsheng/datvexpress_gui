@@ -161,6 +161,10 @@ DVBS2::DVBS2()
 	m_nTotalFrame = 0;
 	m_bInterleave = true;
 
+	m_nMulti = FRAME_CACHE_COUNT;
+	m_frameMulti = new Bit[ m_nMulti * FRAME_SIZE_NORMAL];
+
+	m_frame = m_frameMulti;
 }
 
 int DVBS2::s2_get_n_symbol()

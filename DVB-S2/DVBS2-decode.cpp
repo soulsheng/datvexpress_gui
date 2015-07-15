@@ -669,8 +669,7 @@ DVBS2_DECODE::DVBS2_DECODE()
 
 	configFormatByTypeModcod( m_typeLast, m_modcodLast );
 
-	m_nMulti = FRAME_CACHE_SIZE;
-	m_frameMulti = new Bit[ m_nMulti * FRAME_SIZE_NORMAL];
+
 }
 
 DVBS2_DECODE::~DVBS2_DECODE()

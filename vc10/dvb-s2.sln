@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-updateChk", "driver-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-chienSearch", "driver-chienSearch.vcxproj", "{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bch", "bch.vcxproj", "{9F418181-A307-4D34-823C-7539A48485F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -57,6 +59,12 @@ Global
 		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|Win32.ActiveCfg = Release|Win32
 		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|Win32.Build.0 = Release|Win32
 		{DA7E5B41-DB78-4B0B-B090-C0BA2C747830}.Release|x64.ActiveCfg = Release|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|Win32.Build.0 = Debug|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Debug|x64.ActiveCfg = Debug|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Release|Win32.ActiveCfg = Release|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Release|Win32.Build.0 = Release|Win32
+		{9F418181-A307-4D34-823C-7539A48485F1}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
