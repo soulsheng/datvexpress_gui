@@ -90,7 +90,6 @@
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_encode.cpp" />
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_tables.cpp" />
     <ClCompile Include="..\DVB-S2\dvb2_scrambler.cpp" />
-    <ClCompile Include="..\DVB-S2\DVBS2-decode.cpp" />
     <ClCompile Include="..\DVB-S2\DVBS2.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_interleave.cpp" />
     <ClCompile Include="..\DVB-S2\dvbs2_modulator.cpp" />
@@ -106,7 +105,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h" />
-    <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
     <ClInclude Include="..\DVB-S2\DVBS2.h" />
     <ClInclude Include="..\fec\bch_bm.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />

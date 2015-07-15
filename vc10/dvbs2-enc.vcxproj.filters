@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\DVB-S2\DVB2.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\DVB-S2\dvb2_bbheader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\DVB-S2\dvb2_scrambler.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\DVB-S2\DVBS2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\DVB-S2\dvbs2_interleave.cpp">
@@ -58,7 +52,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\DVB-S2\DVBS2-decode.cpp" />
     <ClCompile Include="..\fec\ldpc_bp_decode.cpp">
       <Filter>fec</Filter>
     </ClCompile>
@@ -74,18 +67,13 @@
     <ClCompile Include="..\fec\ldpcFactory.cpp">
       <Filter>fec</Filter>
     </ClCompile>
+    <ClCompile Include="..\DVB-S2\DVBS2.cpp" />
+    <ClCompile Include="..\DVB-S2\DVB2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\DVB-S2\DVB2.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\DVB-S2\DVBS2.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\dvb_types.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\DVB-S2\DVBS2-decode.h" />
     <ClInclude Include="..\fec\ldpc_bp_decode.h">
       <Filter>fec</Filter>
     </ClInclude>
@@ -107,5 +95,7 @@
     <ClInclude Include="..\fec\ldpcFactory.h">
       <Filter>fec</Filter>
     </ClInclude>
+    <ClInclude Include="..\DVB-S2\DVBS2.h" />
+    <ClInclude Include="..\DVB-S2\DVB2.h" />
   </ItemGroup>
 </Project>

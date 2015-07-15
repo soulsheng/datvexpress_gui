@@ -1,7 +1,7 @@
 
 #include "DVBS2.h"
-#include "DVBS2-decode.h"
 
+#define PACKET_SIZE		188 
 #define PACKET_NUMBER	100
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
