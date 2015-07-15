@@ -7,10 +7,7 @@
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
 #define PRINT_SIZE		188 * 20
-#define DATA_FROM_ENC	1	// ENCODE OR FILE
-#define VALUE_DIFF		60
 
-#define DATA_FILE_NAME	"D:\\file\\data\\ldpc\\data_long\\s31.1_16apsk_34_long.dat"
 #define DATA_FILE_NAME_ENC	"../data/s31.1_32apsk_34_long.dat"
 
 void init(u8* buffer, int n);	// initialize info
@@ -19,10 +16,7 @@ template<typename T>
 void print(T* b, /*int n, */int nstart = 0, int nsize=PRINT_SIZE);		// output original info
 template<typename T>
 int verify(T* b, /*int n, */int nstart = 0);		// verify original info
-int findHeader(scmplx* c, int n, int* pos);
 
-template<typename T>
-int findHeader(T* c, int n, int* pos);
 
 void main()
 {
@@ -33,7 +27,7 @@ void main()
 	int nFrameCount = 0;
 	FILE *fp2 = fopen( DATA_FILE_NAME_ENC, "rb" );
 	if( !fp2 )
-		printf("failed to open file %s \n",DATA_FILE_NAME );
+		printf("failed to open file %s \n",DATA_FILE_NAME_ENC );
 	
 	fread( &nFrameCount, sizeof(int), 1, fp2 );
 
@@ -134,18 +128,4 @@ int verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 		}
 	}
 	return nErrorCount;
-}
-
-template<typename T>
-int findHeader( T* c, int n, int* pos )
-{
-	int i=1, j=0;
-	int diff = VALUE_DIFF;
-	for (; i<n-1&&j<10; i++)
-		if( abs( abs(c[i]) - abs(c[i-1]) ) < diff && 
-			abs( abs(c[i]) - abs(c[i+1]) ) < diff )
-			pos[j++]=i;
-		else;
-
-	return j;
 }
