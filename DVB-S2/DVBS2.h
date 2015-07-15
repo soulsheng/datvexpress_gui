@@ -2,6 +2,8 @@
 #ifndef DVBS2_H
 #define DVBS2_H
 
+#include "bch_bm.h"
+
 #ifndef M_PI
 #define M_PI 3.14159f
 #endif
@@ -29,6 +31,10 @@ protected:
 		int m_nTotalFrame;
 		bool	m_bInterleave;
 		int		m_nMulti;
+
+		char	m_bitLDPC[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
+		char	m_bitBCH[FRAME_SIZE_NORMAL];
+		BCH_BM	bch;
 
         void b_64_7_code( unsigned char in, int *out );
         void s2_pl_header_encode( u8 modcod, u8 type, int *out);

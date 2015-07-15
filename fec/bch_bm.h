@@ -15,7 +15,7 @@
 #define t(n,k)  ( ((n)-(k)) / (16) )
 
 #define MAXR 192 // max r bits
-#define P 8      // degree of parallelism
+//#define P 8      // degree of parallelism
 //#define MAXN ((1<<16)-1)  // primitive code length
 #define MAXT 12         // Max corrective capacity
 #define DRIFT 0 // adding extra errors

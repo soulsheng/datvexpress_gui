@@ -6,7 +6,6 @@
 #include "itpp/itcomm.h"
 #include "ldpc_bp_decode.h"
 #include "modulatorFactory.h"
-#include "bch_bm.h"
 
 #ifdef USE_GPU
 #include "ldpc_bp_decode.cuh"
@@ -63,14 +62,11 @@ private:
 	double N0;
 	double	m_soft_bits[FRAME_SIZE_NORMAL];
 	double	m_soft_bits_cache[FRAME_SIZE_NORMAL];
-	char	m_bitLDPC[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
-	char	m_bitBCH[FRAME_SIZE_NORMAL];
 
 	ldpc_decoder	ldpc;
 	bool	m_bDecodeSoft;
 
 	ModulatorFactory	mods;	// 调制解调器件库
-	BCH_BM	bch;
 
 #ifdef USE_GPU
 	ldpc_gpu	m_ldpc_gpu;
