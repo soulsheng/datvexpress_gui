@@ -282,6 +282,28 @@ Bit DVB2::bch_s_12_encode( Bit *in, int len )
 
 int DVB2::bch_encode( void )
 {
+#if 1
+	int nSizeParity = m_format[0].kldpc - m_format[0].kbch;
+
+	for(int i=0;i<nSizeParity;i++)
+		m_bitBCH[i] = 0;
+
+	for(int i=0;i<m_format[0].kbch;i++)
+		m_bitBCH[nSizeParity+i] = m_frame[i];
+
+	bch.encode( m_bitBCH, m_bitLDPC );
+	
+	//bch.simulateError( m_bitLDPC, 1 );
+
+	for(int i=0;i<m_format[0].kbch;i++)
+		m_frame[i] = m_bitLDPC[nSizeParity+i];
+
+	for(int i=0;i<nSizeParity;i++)
+		m_frame[m_format[0].kbch+i] = m_bitLDPC[i];
+
+	return m_format[0].kldpc;
+
+#else
     int res;
     int len = m_format[0].kbch;
 
@@ -305,6 +327,7 @@ int DVB2::bch_encode( void )
         break;
     }
     return res;
+#endif
 }
 
 //

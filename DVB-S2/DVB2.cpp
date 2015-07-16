@@ -197,7 +197,10 @@ int DVB2::set_configure( DVB2FrameFormat *f )
         else
             m_params_changed = 1;
     }
-    return error;
+
+	bch.setCode( f->code_rate, f->frame_type );
+
+	return error;
 }
 void DVB2::get_configure( DVB2FrameFormat *f )
 {

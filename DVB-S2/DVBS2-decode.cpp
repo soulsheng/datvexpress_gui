@@ -534,13 +534,21 @@ void DVBS2_DECODE::bch_decode()
 	if ( !m_bDecodeSoft )
 		return;
 
-	for(int i=0;i<FRAME_SIZE_NORMAL;i++)
-		m_bitLDPC[i] = m_frame[i];
+	//for(int i=0;i<FRAME_SIZE_NORMAL;i++)
+	//	m_bitLDPC[i] = m_frame[i];
+
+	int nSizeParity = m_format[0].kldpc - m_format[0].kbch;
+
+	for(int i=0;i<m_format[0].kbch;i++)
+		m_bitLDPC[nSizeParity + i] = m_frame[i];
+
+	for(int i=0;i<nSizeParity;i++)
+		m_bitLDPC[i] = m_frame[m_format[0].kbch + i];
 
 	bch.decode( m_bitBCH, m_bitLDPC );
 
-	for(int i=0;i<FRAME_SIZE_NORMAL;i++)
-		m_frame[i] = m_bitBCH[i];
+	for(int i=0;i<m_format[0].kbch;i++)
+		m_frame[i] = m_bitBCH[nSizeParity + i];
 	}
 }
 

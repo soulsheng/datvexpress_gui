@@ -13,7 +13,7 @@
 #include "helper_timer.h"
 #define		TIME_STEP		6	
 //#define		MESSAGE_AS_TAIL	0	// 信息位在结尾
-#define		OUTPUT_ERROR_POSITION	0
+#define		OUTPUT_ERROR_POSITION	1
 
 int BCH_BM::lfsr(unsigned long int *seed)
 {
