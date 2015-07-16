@@ -12,7 +12,7 @@
 
 #include "helper_timer.h"
 #define		TIME_STEP		6	
-#define		MESSAGE_AS_TAIL	0	// 信息位在结尾
+//#define		MESSAGE_AS_TAIL	0	// 信息位在结尾
 #define		OUTPUT_ERROR_POSITION	0
 
 int BCH_BM::lfsr(unsigned long int *seed)
@@ -407,7 +407,7 @@ void BCH_BM::printNK( char* message, char* codeword, int length )
 
 void BCH_BM::BCH_final_dec(  char* message, char* codeword )
 {
-#if MESSAGE_AS_TAIL
+#ifdef MESSAGE_AS_TAIL
 	for (int i=n-1;i>=n-k;i--)
 #else
 	for (int i=0;i<k;i++)
@@ -418,7 +418,7 @@ void BCH_BM::BCH_final_dec(  char* message, char* codeword )
 bool BCH_BM::verifyResult(  char* message, char* messageRef )
 {
 	bool bSuccess = true;
-#if MESSAGE_AS_TAIL
+#ifdef MESSAGE_AS_TAIL
 	for (int i=n-1;i>=n-k;i--)
 #else
 	for (int i=0;i<k;i++)
