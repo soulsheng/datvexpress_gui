@@ -293,7 +293,7 @@ int DVB2::bch_encode( void )
 
 	bch.encode( m_bitBCH, m_bitLDPC );
 	
-	//bch.simulateError( m_bitLDPC, 1 );
+	bch.simulateError( m_bitLDPC, 1 );
 
 	for(int i=0;i<m_format[0].kbch;i++)
 		m_frame[i] = m_bitLDPC[nSizeParity+i];
