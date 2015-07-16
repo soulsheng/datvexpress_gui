@@ -127,6 +127,9 @@ void bch_gpu::chienSearch( int* lambda, int* el, int L )
 	// 0.6 ms 
 	cudaMemcpy( d_lambda, lambda, tCapacity * 2 * sizeof(int), cudaMemcpyHostToDevice );
 
+	cudaMemset( d_el, -1, tMax*2*sizeof(int) );
+	cudaMemset( d_kk, 0, 1*sizeof(int) );
+
 	dim3 block( BLOCK_DIM );
 	dim3 grid( (MAXN + BLOCK_DIM - 1)/BLOCK_DIM );
 	chien_search_kernel<<< grid, block >>>( d_powAlpha, d_lambda, d_el, d_kk, L, MAXN );
