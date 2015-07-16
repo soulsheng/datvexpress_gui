@@ -52,8 +52,13 @@ void main()
 	
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
-	 
+
+#if 0	// test step time
+	nFrameCount = 1;
+	m_dvbs2_dec->decode_ts_frame( pl );
+#else
 	m_dvbs2_dec->decode_ts_frame( pl, nFrameCount );
+#endif
 
 	sdkStopTimer( &timerStep );
 	float fTime =sdkGetTimerValue( &timerStep )/nFrameCount ;

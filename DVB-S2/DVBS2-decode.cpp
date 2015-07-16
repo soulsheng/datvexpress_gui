@@ -6,6 +6,8 @@
 
 int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 {
+	m_nMulti = 1;
+
 	vec			timerStepValue(TIME_STEP);
 
 	int nTimeStep = 0;
@@ -14,13 +16,10 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	sdkCreateTimer( &timerStep );
 	sdkStartTimer( &timerStep );
 
-	memcpy_s( this->m_pl, sizeof(scmplx)*FRAME_SIZE_NORMAL, 
-		pl, sizeof(scmplx)*FRAME_SIZE_NORMAL);
-
 	int res = 0;
 	
 	// decode the header
-	s2_pl_header_decode(m_pl);
+	s2_pl_header_decode(pl);
 
 	if ( m_bNeedUpdateCode )
 	{
@@ -29,10 +28,10 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	}
 
 	// Now apply the scrambler to the data part not the header
-	pl_scramble_decode( &m_pl[90], m_payload_symbols );
+	pl_scramble_decode( &pl[90], m_payload_symbols );
 
 	sdkStopTimer( &timerStep );
-	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 2.3 ms
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.1 ms
 
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
@@ -90,11 +89,11 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 		sdkStartTimer( &timerStep );
 
 #ifndef USE_GPU
-		decode_soft( &m_pl[90], N0 );
+		decode_soft( &pl[90], N0 );
 #else	
-		m_ldpc_gpu.decode_soft( &m_pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
+		m_ldpc_gpu.decode_soft( &pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
 			m_frame, m_format[0].code_rate,
-			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 2.8 ms
+			m_soft_bits, m_soft_bits_cache, m_bitLDPC );// 2.4 ms
 #endif
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );
@@ -108,7 +107,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	bch_decode();
 
 	sdkStopTimer( &timerStep );
-	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 1.6 ms 
+	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 1.1 ms 
 
 	sdkResetTimer( &timerStep );
 	sdkStartTimer( &timerStep );
@@ -130,7 +129,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 0// cost time 0.7ms/cout 
+#if 1// cost time 0.7ms/cout 
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
