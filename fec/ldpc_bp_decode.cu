@@ -14,13 +14,16 @@ using namespace std;
 	cudaArray* arr_mvc;
 	cudaChannelFormatDesc channelDesc;
 #endif
+#include "helper_timer.h"
+#define		TIME_STEP		6	
+#define		ENABLE_TIME_TEST		0	
 
-bool ldpc_gpu::syndrome_check_gpu() 
-{
+bool ldpc_gpu::syndrome_check_gpu( int nMulti ) 
+{// 0.07 ms/1f, 
 	dim3 block( SIZE_BLOCK );
 	dim3 grid( (ncheck + block.x - 1) / block.x );
 
-	syndrome_check_kernel<<< grid, block >>>( d_LLRout, m_ldpcCurrent->d_sumX2, ncheck, m_ldpcCurrent->d_V, d_synd );
+	syndrome_check_kernel<<< grid, block >>>( d_LLRout, m_ldpcCurrent->d_sumX2, ncheck, m_ldpcCurrent->d_V, d_synd, nvar, nMulti );
 
 	int h_synd=0;
 	cudaMemcpy( &h_synd, d_synd, sizeof(int), cudaMemcpyDeviceToHost );
@@ -357,22 +360,22 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 		cudaMemcpy( d_pSymbolsIn+j*nPayloadSymbols, 
 			sym + j*FRAME_SIZE_NORMAL, 
 			nPayloadSymbols * sizeof(scmplx), 
-			cudaMemcpyHostToDevice );// 0.11 ms
+			cudaMemcpyHostToDevice );// 0.02 ms/1f, 0.28 ms/3f
 
 	dim3 block( 1024/M );
 	dim3 grid;
 	grid.x = (nPayloadSymbols + block.x-1)/block.x;
 
 	block.y = M;
-	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*M_SYMBOL_SIZE_MAX, M, d_pDist2, CP, nPayloadSymbols, nMulti );// 0.45 ms
+	distance_kernel<<< grid, block >>>( d_pSymbolsIn, d_pSymbolsTemplate+(k-2)*M_SYMBOL_SIZE_MAX, M, d_pDist2, CP, nPayloadSymbols, nMulti );// 0.13 ms/1f, 0.28 ms/3f
 
 	block.y = k;
 	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
-		m_ldpcCurrent->Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.51 ms
+		m_ldpcCurrent->Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.51 ms/1f, 1.5 ms/3f
 
 	// step	2:	de-interleave
 #if 1
-	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols, nMulti );// 0.02 ms
+	reorder_kernel<<< grid, block >>>(d_LLRin, d_pSoftBitCache, k, nPayloadSymbols, nMulti );// 0.02 ms/1f, 0.03 ms/3f
 	//cudaMemcpy( p_soft_bits, d_LLRin, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
 #else
 	cudaMemcpy( p_soft_bits_cache, d_pSoftBitCache, FRAME_SIZE_NORMAL*sizeof(int), cudaMemcpyDeviceToHost );
@@ -382,7 +385,7 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 #endif
 
 	// step	3:	ldpc decode
-	bp_decode_once( p_bitLDPC, code_rate, nMulti );// 2.3 ms
+	bp_decode_once( p_bitLDPC, code_rate, nMulti );// 1.8 ms/1f, 5.0 ms/3f
 
 	// step	4:	cast type, char -> int
 	for( int frame = 0; frame < nMulti; frame ++ ) {
@@ -408,6 +411,10 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate, int nMulti,
 	bool psc /*= true*/,			//!< check syndrom after each iteration
 	int max_iters /*= 50*/ )		//!< Maximum number of iterations
 {
+	StopWatchInterface	*timerStep;
+
+	sdkCreateTimer( &timerStep );
+
 	m_ldpcCurrent = m_ldpcDataPool.findLDPC_DATA( code_rate );
 	nvar = m_ldpcCurrent->nvar;
 	ncheck = m_ldpcCurrent->ncheck;
@@ -418,14 +425,14 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate, int nMulti,
  	dim3 block( SIZE_BLOCK );
 	dim3 grid( (nvar + block.x - 1) / block.x );
 
-	// initial step
+	// initial step 0.04ms
 	initializeMVC_kernel<<< grid, block >>>( nvar, m_ldpcCurrent->d_sumX1, d_LLRin, m_ldpcCurrent->d_mvc, m_ldpcCurrent->nmaxX1, nMulti );
 
 	int not_valid_codeword = true;
 	int iter = 1;
 	for( ; iter < max_iters && not_valid_codeword; iter ++ )
 	{
-		// --------- Step 1: check to variable nodes ----------
+		// --------- Step 1: check to variable nodes ----------	0.31 ms
 		updateCheckNodeOpti_kernel<<< grid, block >>>(ncheck, nvar, 
 			m_ldpcCurrent->d_sumX2, m_ldpcCurrent->d_mvc,
 			m_ldpcCurrent->d_jind, m_ldpcCurrent->d_logexp_table, 
@@ -434,23 +441,33 @@ int ldpc_gpu::bp_decode_once(char *LLRout, int code_rate, int nMulti,
 			m_ldpcCurrent->d_mcv );	// Shared not faster
 
 
-		// --------- Step 2: variable to check nodes ----------
+		// --------- Step 2: variable to check nodes ----------	0.23 ms
 		updateVariableNodeOpti_kernel<<< grid, block >>>( nvar, ncheck, 
 			m_ldpcCurrent->d_sumX1, m_ldpcCurrent->d_mcv, m_ldpcCurrent->d_iind, d_LLRin, 
 			m_ldpcCurrent->nmaxX1, m_ldpcCurrent->nmaxX2, nMulti, 
 			d_LLRout, m_ldpcCurrent->d_mvc );
 
 
-		// --------- Step 3: check syndrome 奇偶校验 ----------
-		cudaMemcpy( LLRout, d_LLRout, nMulti * nvar * sizeof(char), cudaMemcpyDeviceToHost );
+		// --------- Step 3: check syndrome 奇偶校验 ---------- 0.11 ms	
+#if ENABLE_TIME_TEST
+		cudaDeviceSynchronize();
+		sdkStartTimer( &timerStep );
+#endif
+		bool bVaid = syndrome_check_gpu( nMulti );// 0.17 ms 
 		
-
-		if (psc && check_parity_cpu(LLRout, nMulti)) {
+#if ENABLE_TIME_TEST
+		sdkStopTimer( &timerStep );
+		cout  << "timerStepValue = "<< sdkGetTimerValue( &timerStep ) << " ms, " << endl;
+#endif
+	
+		if (psc && bVaid ) {
 			 not_valid_codeword = false;
 			break;
 		}
 
 	}
+
+	cudaMemcpy( LLRout, d_LLRout, nMulti * nvar * sizeof(char), cudaMemcpyDeviceToHost );
 
   return (!not_valid_codeword ? iter : -iter);
 }

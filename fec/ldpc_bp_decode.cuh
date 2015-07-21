@@ -8,7 +8,7 @@
 class ldpc_gpu
 {
 protected:
-bool syndrome_check_gpu( ) ;
+bool syndrome_check_gpu( int nMulti=1 ) ;
 
 void updateVariableNode_gpu( ) ;
 

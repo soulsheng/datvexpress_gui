@@ -33,15 +33,21 @@ void initConstantMemoryLogExp(int *logexp_table)
 }
 
 __global__ 
-void syndrome_check_kernel(const char *d_LLR,
+void syndrome_check_kernel(const char *d_LLRn,
 	const int* d_sumX2, const int ncheck, 
 	const int* d_V,
-	int* d_synd) 
+	int* d_synd,
+	int nvar, int nFrame) 
 {
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if( j>= ncheck )
 		return;
+
+	int synd = 0;
+
+	for( int frame = 0; frame < nFrame; frame ++ ){
+    const char* d_LLR = d_LLRn + frame * nvar;
 
 	if( j == 0 )
 		*d_synd = 0;
@@ -49,7 +55,6 @@ void syndrome_check_kernel(const char *d_LLR,
 	__syncthreads();
 
 	int i, vi;
-	int synd = 0;
 	int vind = j; // tracks j+i*ncheck
 	for (i = 0; i < d_sumX2[j]; i++) {
 		vi = d_V[vind];
@@ -65,6 +70,8 @@ void syndrome_check_kernel(const char *d_LLR,
 
 	if( synd&1 )
 		atomicAdd( d_synd, 1 );	// synd is even ?
+
+	}
 }
 
 __global__ 

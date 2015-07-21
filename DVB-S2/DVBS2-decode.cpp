@@ -129,7 +129,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
 	sdkDeleteTimer( &timerStep );
 
 	m_nTotalFrame++;
-#if 1// cost time 0.7ms/cout 
+#if 0// cost time 0.7ms/cout 
 	for (int i=0;i<TIME_STEP;i++)
 	{
 		cout  << "timerStepValue[ " << i << " ] = "<< timerStepValue[i] << " ms, " << endl;
@@ -1064,6 +1064,10 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
 		transport_packet_decode_crc( );
 
 	//}
+
+#ifndef USE_GPU
+	cudaDeviceSynchronize();
+#endif
 
 	return res;
 }
