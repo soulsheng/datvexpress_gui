@@ -465,8 +465,16 @@ void BCH_BM::initialize()
 void BCH_BM::release()
 {
 	//free(powAlpha);	free(indexAlpha);
+	if( NULL == el )
+		return;
+
 	free( el );
 	free( reg );
+	el = reg = NULL;
+
+#ifdef USE_GPU
+	m_bch_gpu.release();
+#endif
 }
 
 void BCH_BM::decode(  char* messageRecv, char* codeword )

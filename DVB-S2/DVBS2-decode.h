@@ -27,6 +27,7 @@ public:
 	unsigned char* getByte(int nFrame);
 
 	void initialize();
+	void release();
 
 protected:
 	void s2_pl_header_decode(scmplx* pl);	// c m_pl[90]	->	i MODCOD

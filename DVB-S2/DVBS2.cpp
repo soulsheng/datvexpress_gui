@@ -193,3 +193,8 @@ int DVBS2::get_frame_count()
 	return	m_nTotalFrame;
 }
 
+DVBS2::~DVBS2()
+{
+	free( m_frameMulti );
+}
+

@@ -56,6 +56,7 @@ public:
 		int s2_get_n_symbol();
 		int get_frame_count();
 	DVBS2();
+	~DVBS2();
 };
 
 #endif

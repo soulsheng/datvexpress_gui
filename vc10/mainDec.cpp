@@ -78,7 +78,7 @@ void main()
 			printf("\nframe %d failed to decode %d bits\n\n",i, nError);
 		printf("____________________________________________\n");
 	}
-
+	m_dvbs2_dec->release();
 	delete	m_dvbs2_dec;
 	free( pl );
 }

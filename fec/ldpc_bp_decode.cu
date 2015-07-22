@@ -298,21 +298,28 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols, int nMult
 }
 
 
-bool ldpc_gpu::release()
+void ldpc_gpu::release()
 {
+	if( NULL == d_LLRin )
+		return;
+
 	cudaFree( d_LLRin );	cudaFree( d_LLRout );
-	
+	d_LLRin = NULL;			d_LLRout = NULL;
+
 	cudaFree( d_synd );
+	d_synd = NULL;
 
 	cudaFree( d_pSymbolsTemplate );
+	d_pSymbolsTemplate = NULL;
 
-	cudaFree( d_pDist2 );
+	cudaFree( d_pDist2 );	d_pDist2 = NULL;
 
 	free( h_mvc );	free( h_mcv );	free( h_LLRin );
-
+	h_mvc = NULL;	h_mcv = NULL;	h_LLRin = NULL;
 	free( m_pDist2 );
+	m_pDist2 = NULL;
 
-	return true;
+	return ;
 }
 
 ldpc_gpu::~ldpc_gpu()

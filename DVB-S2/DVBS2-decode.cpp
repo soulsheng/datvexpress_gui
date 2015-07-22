@@ -2,6 +2,7 @@
 #include "DVBS2-decode.h"
 #include "dvbUtility.h"
 #include "helper_timer.h"
+#include <cuda_runtime.h>
 #define		TIME_STEP		6	
 
 int DVBS2_DECODE::decode_ts_frame( scmplx* pl )
@@ -681,7 +682,7 @@ DVBS2_DECODE::DVBS2_DECODE()
 
 DVBS2_DECODE::~DVBS2_DECODE()
 {
-	free( m_frameMulti );
+	release();
 }
 
 int DVBS2_DECODE::checkSOF( int* sof, int n )
@@ -1070,4 +1071,13 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
 #endif
 
 	return res;
+}
+
+void DVBS2_DECODE::release()
+{
+	// gpu release
+	m_ldpc_gpu.release();
+	bch.release();
+
+	cudaDeviceReset();
 }

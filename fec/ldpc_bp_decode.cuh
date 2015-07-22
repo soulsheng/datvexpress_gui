@@ -66,8 +66,9 @@ int decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, int k,
 
 	~ldpc_gpu();
 
+	void	release();
+
 private:
-	bool	release();
 	float	distance( const scmplx& cL, const scmplx& cR );
 
 private:

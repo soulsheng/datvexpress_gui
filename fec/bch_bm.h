@@ -86,9 +86,9 @@ void BerlMass( );
 /*********************** final step of BCH decoder ********************************/
 void BCH_final_dec( char* message, char* codeword);
 
-void release();
-
 public:
+
+void release();
 
 /*********************** print msg and code  *******************************/
 void printNK(char* message, char* codeword, int length);
