@@ -27,6 +27,8 @@ int main()
 
 	bool bStatus = bch.verifyResult( message, messageRec );
 
+	cudaDeviceReset();
+
 	if ( bStatus )
 		cout << "succeed" << endl; 
 	else

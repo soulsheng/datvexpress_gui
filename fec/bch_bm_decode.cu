@@ -9,7 +9,7 @@
 #include <iostream>
 using namespace std;
 
-//#include "dvbUtility.h"
+#include "dvbUtility.h"
 
 bch_gpu::bch_gpu()
 {
@@ -43,8 +43,8 @@ void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal,
 	cudaMalloc( (void**)&d_codeword, n*sizeof(char) );
 	
 	
-	cudaMalloc( (void**)&d_SCache, BLOCK_DIM*sizeof(int) );
-	cudaMemset( d_SCache, 0, BLOCK_DIM*sizeof(int) );
+	cudaMalloc( (void**)&d_SCache, tCapacity*2*BLOCK_DIM*sizeof(int) );
+	cudaMemset( d_SCache, 0, tCapacity*2*BLOCK_DIM*sizeof(int) );
 
 	cudaMalloc( (void**)&d_lambda, tCapacity*2*sizeof(int));
 	
@@ -54,7 +54,7 @@ void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal,
 	cudaMalloc( (void**)&d_kk, 1*sizeof(int));
 	cudaMemset( d_kk, 0, 1*sizeof(int) );
 
-	m_SCache = (int*) calloc(BLOCK_NUM_MAX,sizeof(int));
+	m_SCache = (int*) calloc(tCapacity*2*BLOCK_NUM_MAX,sizeof(int));
 
 	this->powAlpha = powAlpha;
 	this->indexAlpha = indexAlpha;
@@ -67,6 +67,7 @@ void bch_gpu::release()
 	cudaFree( d_powAlpha );
 	cudaFree( d_indexAlpha );
 	cudaFree( d_S );
+	cudaFree( d_SCache );
 
 	cudaFree( d_codeword );
 
@@ -83,10 +84,19 @@ bool bch_gpu::error_detection( char* codeword )
 
 	dim3 block(BLOCK_DIM);
 	dim3 grid( (n+BLOCK_DIM-1)/BLOCK_DIM );
+
+#if 1
+
+	error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, char(tCapacity*2), MAXN, n );
+
+#else
 	for(int i = 0; i < tCapacity*2; i++)
 	{
 		error_detection_kernel<<< grid, block >>>( d_codeword, d_powAlpha, d_SCache, i, MAXN, n );
-		cudaMemcpy( m_SCache, d_SCache, grid.x * sizeof(int), cudaMemcpyDeviceToHost );
+	}
+#endif
+
+	cudaMemcpy( m_SCache, d_SCache, tCapacity*2*grid.x * sizeof(int), cudaMemcpyDeviceToHost );
 		
 		
 #if WRITE_FILE_FOR_DRIVER
@@ -101,10 +111,12 @@ bool bch_gpu::error_detection( char* codeword )
 	}
 #endif
 
+	for(int i = 0; i < tCapacity*2; i++)
+	{
 		S[i] = 0;
 		for( int j=0; j< grid.x; j++ )
 		{
-			S[i] ^= m_SCache[j];
+			S[i] ^= m_SCache[j+i*grid.x];
 		}
 	}
 	

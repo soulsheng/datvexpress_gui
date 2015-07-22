@@ -31,8 +31,43 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, 
 
 
 	if( threadIdx.x == 0 )
-		SCache[blockIdx.x] = s_powAlpha[0];
+		SCache[blockIdx.x+i*gridDim.x] = s_powAlpha[0];
 	__syncthreads();
+}
+
+__global__ 
+void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2, int MAXN, int n )
+{
+	int j = blockIdx.x * blockDim.x + threadIdx.x ;
+
+	__shared__ int	s_powAlpha[BLOCK_DIM] ;
+	__shared__ char	s_codeword[BLOCK_DIM] ;
+
+	for(int i = 0; i < t2; i++)
+	{
+	
+	s_codeword[ threadIdx.x ] = codeword[ j ];
+	if(s_codeword[ threadIdx.x ] && j<n )
+  		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+	else
+		s_powAlpha[ threadIdx.x ] = 0;
+
+	__syncthreads();
+
+	for( int offset = blockDim.x / 2; offset>=1; offset /= 2 )
+	{
+		if( threadIdx.x < offset )
+				s_powAlpha[ threadIdx.x ] ^= s_powAlpha[ threadIdx.x + offset ];
+
+		__syncthreads();
+	}
+
+
+	if( threadIdx.x == 0 )
+		SCache[blockIdx.x+i*gridDim.x] = s_powAlpha[0];
+	__syncthreads();
+
+	}
 }
 
 __global__

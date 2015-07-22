@@ -6,6 +6,7 @@
 
 #ifdef USE_GPU
 #include "bch_bm_decode.cuh"
+#include <cuda_runtime.h>
 #endif
 
 //////////////////////////// MACRO //////////////////////////////
