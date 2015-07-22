@@ -77,6 +77,9 @@
       <Filter>fec</Filter>
     </ClCompile>
     <ClCompile Include="mainDec.cpp" />
+    <ClCompile Include="..\fec\itppUtility.cpp">
+      <Filter>fec</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\DVB2.h">
@@ -108,6 +111,9 @@
       <Filter>fec</Filter>
     </ClInclude>
     <ClInclude Include="..\fec\ldpcFactory.h">
+      <Filter>fec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fec\itppUtility.h">
       <Filter>fec</Filter>
     </ClInclude>
   </ItemGroup>

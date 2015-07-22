@@ -7,6 +7,7 @@ using namespace std;
 #include "helper_timer.h"
 //#include "driverUtility.h"
 #include "dvbUtility.h"
+#include "itppUtility.h"
 
 bool ldpc_decoder::syndrome_check(char *LLR,
 	int ncheck, 

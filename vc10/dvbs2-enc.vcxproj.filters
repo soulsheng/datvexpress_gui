@@ -69,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="..\DVB-S2\DVBS2.cpp" />
     <ClCompile Include="..\DVB-S2\DVB2.cpp" />
+    <ClCompile Include="..\fec\itppUtility.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Sources\dvb_types.h">
@@ -97,5 +100,8 @@
     </ClInclude>
     <ClInclude Include="..\DVB-S2\DVBS2.h" />
     <ClInclude Include="..\DVB-S2\DVB2.h" />
+    <ClInclude Include="..\fec\itppUtility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

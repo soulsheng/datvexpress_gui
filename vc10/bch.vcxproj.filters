@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClCompile Include="..\fec\bch_bm.cpp" />
     <ClCompile Include="mainBch.cpp" />
+    <ClCompile Include="..\fec\dvbUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\fec\bch_bm.h" />
+    <ClInclude Include="..\fec\dvbUtility.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cuda">

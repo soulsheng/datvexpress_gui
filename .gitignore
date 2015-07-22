@@ -17,3 +17,5 @@
 /vc10/Release
 /data/*.txt
 /bin
+/vc10/data
+/vc10/bin

@@ -31,23 +31,9 @@
 
 #define		WRITE_FILE_FOR_DRIVER	0
 
-#include <itpp/itcomm.h>
 #include <iostream>
+#include <vector>
 using namespace std;
-using namespace itpp;
-
-void convertBufferToVec( char* buffer, bvec& a );
-
-void convertBufferToVec( double* buffer, vec& a );
-
-void convertBufferToVec( double* buffer, cvec& a );
-
-void convertVecToBuffer( char* buffer, bvec& a );
-
-void convertVecToBuffer( double* buffer, vec& a );
-
-void convertVecToBuffer( double* buffer, cvec& a );
-
 
 //! Maximum value of vector
 int max(int *v, int N);
@@ -60,6 +46,8 @@ void	writeFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 void	readFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 
 void	writeFile(std::vector<int>& paramSize, char* filename);
+void	readFile( std::vector<int>& paramSize, char* filename );
+void	readFile( std::vector<int*>& paramSize, char* filename );
 
 template <typename T>
 void 	readArray(T* pArray, int nSize, char* strFileName)
