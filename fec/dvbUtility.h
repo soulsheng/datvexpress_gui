@@ -46,6 +46,7 @@ void	writeFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 void	readFile(int& nCodeword, int& nAlpha, int& nGrid, char* filename);
 
 void	writeFile(std::vector<int>& paramSize, char* filename);
+void	writeFile(std::vector<int*>& paramSize, char* filename);
 void	readFile( std::vector<int>& paramSize, char* filename );
 void	readFile( std::vector<int*>& paramSize, char* filename );
 

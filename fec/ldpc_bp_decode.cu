@@ -3,6 +3,7 @@
 #include "ldpc_bp_decode_kernel.cuh"
 //#include "driverUtility.h"
 #include "itppUtility.h"
+#include "dvbUtility.h"
 
 #include <cuda_runtime.h>
 #include <thrust/reduce.h>
@@ -267,7 +268,7 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols, int nMult
 
 	cudaMalloc( (void**)&d_pSoftBitCache, m_nMultiMax * FRAME_SIZE_NORMAL * sizeof(int) );
 
-	m_pDist2 = new float[FRAME_SIZE_NORMAL*M_SYMBOL_SIZE_MAX];
+	m_pDist2 = new float[m_nMultiMax*FRAME_SIZE_NORMAL*M_SYMBOL_SIZE_MAX];
 
 	initConstantMemoryLogExp(m_ldpcCurrent->getCode()->llrcalc.logexp_table._data());
 
@@ -293,6 +294,7 @@ bool ldpc_gpu::initialize( LDPC_CodeFactory* pcodes, scmplx* psymbols, int nMult
 	h_mvc = (int*)malloc(nvar * MAX_LOCAL_CACHE * sizeof(int));
 	h_mcv = (int*)malloc(ncheck * MAX_LOCAL_CACHE * sizeof(int));
 	h_LLRin= (int*)malloc(nvar * sizeof(int));
+	h_pSoftBit = (int*)malloc(m_nMultiMax * FRAME_SIZE_NORMAL* sizeof(int));
 
 	return true;
 }
@@ -379,6 +381,29 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 	block.y = k;
 	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
 		m_ldpcCurrent->Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.51 ms/1f, 1.5 ms/3f
+
+	
+#if WRITE_FILE_FOR_DRIVER
+	static bool bRunOnce1 = false;
+	if( !bRunOnce1 ){
+		std::vector<int*> params;
+		params.push_back(&k);
+		params.push_back(&M);
+		int Dint1 = m_ldpcCurrent->Dint1;
+		params.push_back(&Dint1);
+		params.push_back(&QLLR_MAX);
+		params.push_back(&nPayloadSymbols);
+		params.push_back(&nMulti);
+		writeFile( params, "../data/softBitSize.txt" );
+
+		cudaMemcpy( m_pDist2, d_pDist2, nMulti * M_SYMBOL_SIZE_MAX * FRAME_SIZE_NORMAL * sizeof(float), cudaMemcpyDeviceToHost );
+		writeArray( m_pDist2, nMulti * M_SYMBOL_SIZE_MAX * FRAME_SIZE_NORMAL, "../data/pDist2.txt" );
+	
+		cudaMemcpy( h_pSoftBit, d_pSoftBitCache, nMulti * FRAME_SIZE_NORMAL * sizeof(int), cudaMemcpyDeviceToHost );
+		writeArray( h_pSoftBit, nMulti * FRAME_SIZE_NORMAL, "../data/pSoftBit.txt" );
+		bRunOnce1 = true;
+	}
+#endif
 
 	// step	2:	de-interleave
 #if 1

@@ -12,12 +12,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\fec\driver-softBit.cpp" />
+    <ClCompile Include="..\fec\dvbUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\fec\driver-softBit.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fec\driver-softBit.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\fec\dvbUtility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{BAA0C4E1-C07F-484B-8AA6-347C6A587811}</ProjectGuid>

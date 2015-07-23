@@ -111,6 +111,7 @@ private:
 	float*	m_pDist2 ;			// [FRAME_SIZE_NORMAL][32]
 
 	int*	d_pSoftBitCache ;	// [FRAME_SIZE_NORMAL]
+	int*	h_pSoftBit;
 	int*	h_LLRin;
 
 	int		m_nMultiMax;

@@ -94,6 +94,19 @@ void writeFile( std::vector<int>& paramSize, char* filename )
 	fclose( fp );
 }
 
+void writeFile( std::vector<int*>& paramSize, char* filename )
+{
+	FILE* fp;
+	fp = fopen( filename, "wb" );
+	if( !fp )
+		return;
+
+	for (int i=0;i<paramSize.size();i++)
+		fwrite( paramSize[i], sizeof(int), 1, fp );
+
+	fclose( fp );
+}
+
 void readFile( std::vector<int>& paramSize, char* filename )
 {
 	FILE* fp;

@@ -15,21 +15,17 @@ public:
 	~driverSoftBit();
 
 private:
-	int nvar, ncheck;
-	int nmaxX1, nmaxX2;
+	float N0;
+	int k, M, Dint1, QLLR_MAX, n, nPayloadSymbols, nMulti;
 
 	// host
-	int *sumX1;
-	int *iind;
-	int *mvc, *mcv;
-	int *input;	char *output;
+	float *m_pDist2;
+	int *m_pSoftBit;
 
-	int *ref_mvc;	char *ref_output;
+	int *ref_pSoftBit;
 
 	// device
-	int *d_sumX1;
-	int *d_iind;
-	int *d_mvc, *d_mcv;
-	int *d_input;	char *d_output;
+	float *d_pDist2;
+	int *d_pSoftBitCache;
 
 };
