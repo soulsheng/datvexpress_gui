@@ -25,7 +25,6 @@ void main()
 {
 	scmplx pl[FRAME_SIZE_NORMAL];
 	short  pBuffer[FRAME_SIZE_NORMAL*2];
-	printf("%d,%d,%d \n", sizeof(long), sizeof(int), sizeof(short) );
 
 	DVBS2*	m_dvbs2 = new DVBS2;
 	DVB2FrameFormat	dvbs2_fmt;
@@ -52,7 +51,7 @@ void main()
 
 	u8 b[PACKET_STREAM], bRef[PACKET_STREAM];
 	init( b, PACKET_STREAM );
-	print( b, PACKET_STREAM );
+	//print( b, PACKET_STREAM );
 
 	for (int i=0;i<PACKET_NUMBER;i++)
 	{
@@ -64,6 +63,7 @@ void main()
 	if( fp )
 	{
 		int nFrameCount = m_dvbs2->get_frame_count();
+		printf("\nframe count : %d ... ... \n\n", nFrameCount );	
 
 		fwrite( &nFrameCount, sizeof(int), 1, fp );
 
@@ -86,10 +86,10 @@ void main()
 
 	delete	m_dvbs2;
 
-	print( pl, PACKET_SIZE );
+	//print( pl, PACKET_SIZE );
 
-	printf("pl_symbol(90): \n");
-	print( pl, PACKET_SIZE, 90 );
+	//printf("pl_symbol(90): \n");
+	//print( pl, PACKET_SIZE, 90 );
 
 }
 

@@ -41,7 +41,6 @@ void main()
 
 	fclose( fp2 );
 
-	printf("\nframe count : %d ... ... \n\n", nFrameCount );	
 
 	DVBS2_DECODE*	m_dvbs2_dec = new DVBS2_DECODE;
 	m_dvbs2_dec->initialize();
@@ -60,6 +59,7 @@ void main()
 #else
 	m_dvbs2_dec->decode_ts_frame( pl, nFrameCount );
 #endif
+	printf("\nframe count : %d ... ... \n\n", nFrameCount );	
 
 	sdkStopTimer( &timerStep );
 	float fTime =sdkGetTimerValue( &timerStep )/nFrameCount ;

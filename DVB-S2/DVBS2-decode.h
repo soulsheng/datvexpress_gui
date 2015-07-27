@@ -22,7 +22,7 @@ public:
 	~DVBS2_DECODE();
 
 	int decode_ts_frame( scmplx* pl );	// c m_pl[]	->	B ts[]
-	int decode_ts_frame( scmplx* pl, int nMulti );	// c m_pl[]	->	B ts[]
+	int decode_ts_frame( scmplx* pl, int& nMulti );	// c m_pl[]	->	B ts[]
 
 	unsigned char* getByte(int nFrame);
 

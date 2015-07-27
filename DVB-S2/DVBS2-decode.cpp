@@ -1022,10 +1022,13 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 
 }
 
-int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int nMulti /*= 5 */ )
+int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int& nMulti /*= 5 */ )
 {
 
 	int res = 0;
+
+	if( nMulti >= FRAME_CACHE_COUNT )
+		nMulti = FRAME_CACHE_COUNT;
 
 	m_nMulti = nMulti;
 
