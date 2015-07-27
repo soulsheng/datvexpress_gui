@@ -61,7 +61,7 @@ void soft_bit_kernel(float *m_pDist2N, int *p_soft_bits_cacheN, int k, int M, fl
 
 			for (int j = 0; j < M; j++) 
 			{
-				temp = m_pDist2[index*M+j];
+				temp = m_pDist2[index+j*n];
 				if ( j&(1<<(k-i-1)) )
 				{
 					if (temp < d1min) 
@@ -94,7 +94,7 @@ bool driverSoftBit::launch()
 
 	block.y = k;
 	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
-		Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.51 ms/1f, 1.5 ms/3f
+		Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.1 ms/1f, 0.23 ms/3f
 
 
 	cudaError_t	status = cudaGetLastError();

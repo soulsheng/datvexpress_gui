@@ -471,7 +471,7 @@ void distance_kernel(scmplx *sym, scmplx *symTemplate, int M, float *dist2N,
 
 		dist2Val /= scale*scale;
 
-		dist2[i*M+j] = dist2Val;
+		dist2[i+j*n] = dist2Val;
 
 	}
 
@@ -522,7 +522,7 @@ void soft_bit_kernel(float *m_pDist2N, int *p_soft_bits_cacheN, int k, int M, fl
 
 			for (int j = 0; j < M; j++) 
 			{
-				temp = m_pDist2[index*M+j];
+				temp = m_pDist2[index+j*n];
 				if ( j&(1<<(k-i-1)) )
 				{
 					if (temp < d1min) 

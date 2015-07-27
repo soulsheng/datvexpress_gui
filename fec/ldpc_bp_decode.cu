@@ -380,7 +380,7 @@ int ldpc_gpu::decode_soft( scmplx* sym, double N0, int nPayloadSymbols, int M, i
 
 	block.y = k;
 	soft_bit_kernel<<< grid, block >>>(d_pDist2, d_pSoftBitCache, k, M, N0, 
-		m_ldpcCurrent->Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.51 ms/1f, 1.5 ms/3f
+		m_ldpcCurrent->Dint1, QLLR_MAX, nPayloadSymbols, nMulti );// 0.1 ms/1f, 0.23 ms/3f
 
 	
 #if WRITE_FILE_FOR_DRIVER
