@@ -129,6 +129,12 @@ void DVBS2::s2_get_configure( DVB2FrameFormat *f )
 }
 int DVBS2::s2_add_ts_frame( u8 *ts )
 {
+	if( m_nTotalFrame >= FRAME_CACHE_COUNT )
+	{
+		printf("reach cache limit %d frames\n",FRAME_CACHE_COUNT);
+		return -1;
+	}
+
     int res = 0;
     // Call base class
     if( next_ts_frame_base( ts ) )
@@ -165,6 +171,8 @@ DVBS2::DVBS2()
 	m_frameMulti = new Bit[ m_nMulti * FRAME_SIZE_NORMAL];
 
 	m_frame = m_frameMulti;
+
+	m_pl_cache = new scmplx[ m_nMulti * FRAME_SIZE_NORMAL ];
 }
 
 int DVBS2::s2_get_n_symbol()
@@ -195,6 +203,9 @@ int DVBS2::get_frame_count()
 
 DVBS2::~DVBS2()
 {
-	free( m_frameMulti );
+	delete[]	m_frameMulti;
+	m_frameMulti = NULL;
+	delete[]	m_pl_cache;
+	m_pl_cache = NULL;
 }
 

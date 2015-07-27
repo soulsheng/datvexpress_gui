@@ -20,8 +20,6 @@ int verify(T* b, /*int n, */int nstart = 0);		// verify original info
 
 void main()
 {
-	scmplx* pl = new scmplx[FRAME_SIZE_NORMAL*FRAME_CACHE_COUNT];
-	short  pBuffer[FRAME_SIZE_NORMAL*2];
 
 
 	int nFrameCount = 0;
@@ -30,6 +28,9 @@ void main()
 		printf("failed to open file %s \n",DATA_FILE_NAME_ENC );
 	
 	fread( &nFrameCount, sizeof(int), 1, fp2 );
+
+	scmplx* pl = new scmplx[FRAME_SIZE_NORMAL*nFrameCount];
+	short  pBuffer[FRAME_SIZE_NORMAL*2];
 
 	for ( int i = 0; i<nFrameCount; i++ )
 	{
@@ -80,7 +81,7 @@ void main()
 	}
 	m_dvbs2_dec->release();
 	delete	m_dvbs2_dec;
-	free( pl );
+	delete[]	pl;
 }
 
 void init(u8* buffer, int n)	// initialize info
@@ -110,12 +111,12 @@ template<typename T>
 int verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 {
 	int nPrint = nstart+PRINT_SIZE;//n;
-	int nPositionFirstError = -1;
+	static int nPositionFirstError ;
 	bool bFirstError = true;
 	int nErrorCount = 0;
 	for (int i=nstart;i<nPrint;i++)
 	{
-		if( /*i%PACKET_SIZE &&*/ (i+b[1]-1)%256 != b[i] )
+		if( /*i%PACKET_SIZE &&*/ (256+i+b[nPositionFirstError+1]-nPositionFirstError-1)%256 != b[i] )
 		{
 			if( bFirstError )
 			{
@@ -128,7 +129,7 @@ int verify(T* b, /*int n, */int nstart/* = 0*/)		// output original info
 				continue;
 
 			printf("\nerror bit [%d]=%d \n", i, b[i] );
-			printf(", the bit should be %d \n", (i+b[1]-1)%256 );
+			printf(", the bit should be %d \n", (i+b[nPositionFirstError+1]-nPositionFirstError-1)%256 );
 			nErrorCount ++;
 		}
 	}

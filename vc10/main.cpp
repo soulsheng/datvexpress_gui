@@ -2,7 +2,7 @@
 #include "DVBS2.h"
 
 #define PACKET_SIZE		188 
-#define PACKET_NUMBER	100
+#define PACKET_NUMBER	1000
 #define PACKET_STREAM	(PACKET_NUMBER*PACKET_SIZE)
 #define CP 0x7FFF
 #define PRINT_SIZE		16
@@ -56,8 +56,8 @@ void main()
 
 	for (int i=0;i<PACKET_NUMBER;i++)
 	{
-		if( m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE ) )
-			/*break*/;
+		if( -1 == m_dvbs2->s2_add_ts_frame( b + i*PACKET_SIZE ) )
+			break;
 	}
 
 	FILE *fp = fopen( DATA_FILE_NAME_ENC, "wb" );

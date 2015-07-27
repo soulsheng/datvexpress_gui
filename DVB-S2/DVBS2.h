@@ -18,7 +18,7 @@ protected:
         scmplx m_16apsk[16];
         scmplx m_32apsk[32];
         scmplx m_pl[FRAME_SIZE_NORMAL];
-		scmplx m_pl_cache[FRAME_SIZE_NORMAL*3];
+		scmplx *m_pl_cache;
         scmplx m_pl_dummy[FRAME_SIZE_NORMAL];
         int m_cscram[FRAME_SIZE_NORMAL];
         int m_iframe[FRAME_SIZE_NORMAL];
