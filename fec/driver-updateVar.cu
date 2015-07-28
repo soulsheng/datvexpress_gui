@@ -38,18 +38,25 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 
 	int m[MAX_LOCAL_CACHE];
 
+	//if( i== nvar )// 50 us
+	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 		m[jp] = mcv[ iind[i + jp*nvar] ];
+	}
 
-
+	//if( i== nvar )// 3 us
+	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 		mvc_temp += m[jp];
-	
+	}
 
 	LLRout[i] = mvc_temp<0;
 	
+	//if( i== nvar )// 7 us
+	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 			mvc[i + jp*nvar] = mvc_temp - m[jp];
+	}
 	}
 }
 
@@ -93,14 +100,14 @@ bool driverUpdataVar::launch()
 {
 #if USE_BLOCK_2D
 	
-	dim3 block( SIZE_BLOCK_2D_X, MAX_VAR_NODE );
+	dim3 block( SIZE_BLOCK_2D_X, MAX_LOCAL_CACHE );
 	dim3 grid;
-	grid.x = (nvar * MAX_VAR_NODE + SIZE_BLOCK_2D_X * MAX_VAR_NODE - 1) 
-				/ (SIZE_BLOCK_2D_X * MAX_VAR_NODE) ;
+	grid.x = (nvar + SIZE_BLOCK_2D_X - 1) 
+				/ SIZE_BLOCK_2D_X ;
 
 	updateVariableNodeOpti2D_kernel<<< grid, block >>>( nvar, ncheck, 
 		d_sumX1, d_mcv, d_iind, d_input, 
-		d_output, d_mvc );
+		d_output, d_mvc );// 250ms kernel, 330ms launch
 #else
 
 	dim3 block( SIZE_BLOCK );
@@ -109,7 +116,7 @@ bool driverUpdataVar::launch()
 	updateVariableNodeOpti_kernel<<< grid, block >>>( nvar, ncheck, 
 		d_sumX1, d_mcv, d_iind, d_input, 
 		d_output, d_mvc, 
-		nmaxX1, nmaxX2, N_FRAME );
+		nmaxX1, nmaxX2, N_FRAME );// 70ms kernel, 170ms launch
 
 #endif
 
