@@ -94,6 +94,13 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	int ml[MAX_LOCAL_CACHE];//int* ml	= d_ml	+ j * max_cnd;
 	int mr[MAX_LOCAL_CACHE];//int* mr	= d_mr	+ j * max_cnd;
 	int m[MAX_LOCAL_CACHE];
+	int jIndex[MAX_LOCAL_CACHE]={0};
+	
+	//if( j== ncheck )// 20 us
+	{
+		for(int i = 0; i < sumX2[j]; i++ ) 
+			jIndex[i] = jind[j+i*ncheck];
+	}
 
 	
 	for( int frame = 0; frame < nFrame; frame ++ )	{
@@ -132,10 +139,10 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	break;
 
 	default:		{
-	//if( j== ncheck )
+	//if( j== ncheck )// 50 us
 	{
 		for(int i = 0; i < sumX2[j]; i++ ) 
-			m[i] = mvc[ jind[j+i*ncheck] ];
+			m[i] = mvc[ jIndex[i] ];
 	}
 
 	int nodes = sumX2[j];
@@ -143,7 +150,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	nodes--;
 
 	// compute partial sums from the left and from the right
-	//if( j== ncheck )
+	//if( j== ncheck )// 25 us
 	{
 		ml[0] = m[0];
 		mr[0] = m[nodes];
@@ -153,7 +160,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 		}
 	}
 	// merge partial sums
-	//if( j== ncheck )
+	//if( j== ncheck )// 20 us
 	{	
 		mcv[j] = mr[nodes-1];
 		mcv[j+nodes*ncheck] = ml[nodes-1];
