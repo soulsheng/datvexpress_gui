@@ -108,37 +108,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	const int	*mvc	= n_mvc + frame * nvar * nmaxX1;
 	int			*mcv	= n_mcv + frame * ncheck * nmaxX2;
 
-	switch( sumX2[j] )
-	{
-	case 6:		{	
-		int j0 = j;
-		int m0 = mvc[jind[j0]];
-		int j1 = j0 + ncheck;
-		int m1 = mvc[jind[j1]];
-		int j2 = j1 + ncheck;
-		int m2 = mvc[jind[j2]];
-		int j3 = j2 + ncheck;
-		int m3 = mvc[jind[j3]];
-		int j4 = j3 + ncheck;
-		int m4 = mvc[jind[j4]];
-		int j5 = j4 + ncheck;
-		int m5 = mvc[jind[j5]];
-		int m01 = Boxplus(m0, m1, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		int m23 = Boxplus(m2, m3, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		int m45 = Boxplus(m4, m5, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		int m03 = Boxplus(m01, m23, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		int m25 = Boxplus(m23, m45, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		int m0145 = Boxplus(m01, m45, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j0] = Boxplus(m1, m25, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j1] = Boxplus(m0, m25, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j2] = Boxplus(m0145, m3, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j3] = Boxplus(m0145, m2, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j4] = Boxplus(m03, m5, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-		mcv[j5] = Boxplus(m03, m4, Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table);
-	}// case 6
-	break;
 
-	default:		{
 	//if( j== ncheck )// 50 us
 	{
 		for(int i = 0; i < sumX2[j]; i++ ) 
@@ -167,8 +137,6 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 		for(int i = 1; i < nodes; i++ )
 			mcv[j+i*ncheck] = Boxplus( ml[i-1], mr[nodes-1-i], Dint1, Dint2, Dint3, QLLR_MAX, s_logexp_table );
 	}
-	}// default
-	}//switch
 
 	}// nFrame
 }
