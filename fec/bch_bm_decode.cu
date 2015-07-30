@@ -11,6 +11,11 @@ using namespace std;
 
 #include "dvbUtility.h"
 
+#if USE_TEXTURE_ADDRESS
+	cudaArray* arr_alpha;
+	cudaChannelFormatDesc channelDesc;
+#endif
+
 bch_gpu::bch_gpu()
 {
 
@@ -60,6 +65,21 @@ void bch_gpu::initialize(	int *powAlpha, int *indexAlpha, int mNormal,
 	this->indexAlpha = indexAlpha;
 	this->S = S;
 	this->MAXN = MAXN;
+
+	
+#if USE_TEXTURE_ADDRESS
+	// cuda texture ------------------------------------------------------------------------------------------
+	channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindSigned);
+    cudaError_t err = cudaMallocArray(&arr_alpha, &channelDesc, m_nAlphaSize, 1);
+    cudaMemcpyToArray(arr_alpha, 0, 0, d_powAlpha, m_nAlphaSize * sizeof(int), cudaMemcpyDeviceToDevice);
+
+	texAlpha.addressMode[0] = cudaAddressModeClamp;
+    texAlpha.filterMode = cudaFilterModePoint;
+    texAlpha.normalized = false;
+
+	cudaBindTextureToArray(texAlpha, arr_alpha, channelDesc);
+
+#endif
 }
 
 void bch_gpu::release()
@@ -74,6 +94,10 @@ void bch_gpu::release()
 	cudaFree( d_lambda ); 
 	cudaFree( d_el );
 	cudaFree( d_kk );
+
+#if USE_TEXTURE_ADDRESS
+	//cudaFreeArray( arr_alpha );
+#endif
 }
 
 

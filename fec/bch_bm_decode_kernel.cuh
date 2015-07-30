@@ -4,6 +4,11 @@
 #define		BLOCK_DIM		256
 #define		BLOCK_NUM_MAX	512
 //extern __shared__ int s_array[ ];
+#define		USE_TEXTURE_ADDRESS	0
+
+#if USE_TEXTURE_ADDRESS
+texture<int, 1, cudaReadModeElementType> texAlpha;
+#endif
 
 __global__ 
 void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, int MAXN, int n )
@@ -48,7 +53,11 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2
 	{
 	
 	if( b && j<n )
-  		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+ #if USE_TEXTURE_ADDRESS
+		s_powAlpha[ threadIdx.x ]=  tex1D(texAlpha, ((i+1)*j)%MAXN );
+#else 	
+		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+#endif
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
 
