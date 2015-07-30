@@ -41,18 +41,16 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2
 	int j = blockIdx.x * blockDim.x + threadIdx.x ;
 
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
-	__shared__ char	s_codeword[BLOCK_DIM] ;
 
-	for(int i = 0; i < t2; i++)
+	for(int i = 0; i < t2; i++)// empty loop cost 30 us
 	{
 	
-	s_codeword[ threadIdx.x ] = codeword[ j ];
-	if(s_codeword[ threadIdx.x ] && j<n )
+	if(codeword[ j ] && j<n )
   		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
 
-	__syncthreads();
+	__syncthreads();	// 120 us = 24*5 us
 
 	for( int offset = blockDim.x / 2; offset>=1; offset /= 2 )
 	{
@@ -60,10 +58,10 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2
 				s_powAlpha[ threadIdx.x ] ^= s_powAlpha[ threadIdx.x + offset ];
 
 		__syncthreads();
-	}
+	}// 140 us = 24*6 us 
 
 
-	if( threadIdx.x == 0 )
+	if( threadIdx.x == 0 ) // 1 us
 		SCache[blockIdx.x+i*gridDim.x] = s_powAlpha[0];
 	__syncthreads();
 
