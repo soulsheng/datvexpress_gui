@@ -42,10 +42,12 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2
 
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
 
+	char b = codeword[ j ];
+
 	for(int i = 0; i < t2; i++)// empty loop cost 30 us
 	{
 	
-	if(codeword[ j ] && j<n )
+	if( b && j<n )
   		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
