@@ -41,11 +41,17 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, int i, 
 }
 
 __global__ 
-void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2, int MAXN, int n )
+void error_detection_kernel( char* codewordN, int* powAlpha, int* SCacheN, char t2, int MAXN, int n, int nFrame )
 {
 	int j = blockIdx.x * blockDim.x + threadIdx.x ;
 
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
+
+	
+	for( int frame = 0; frame < nFrame; frame ++ )	{
+
+	char * codeword = codewordN + frame*n; 
+	int* SCache = SCacheN + frame*t2 * gridDim.x;
 
 	char b = codeword[ j ];
 
@@ -77,15 +83,24 @@ void error_detection_kernel( char* codeword, int* powAlpha, int* SCache, char t2
 	__syncthreads();
 
 	}
+	}
 }
 
 __global__
-void chien_search_kernel( int* powAlpha, int* lambda, int* el, int* kk, int L, int MAXN )
+void chien_search_kernel( int* powAlpha, int* lambdaN, int* elN, int* kkN, int* LN, int MAXN,
+		int tMax, int t2, int nFrame )
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x ;
 
 	if( i >= MAXN )
 		return;
+
+	for( int frame = 0; frame < nFrame; frame ++ )	{
+
+	int* lambda = lambdaN + frame * t2;
+	int* kk = kkN + frame;
+	int* el = elN + frame * tMax*2 ;
+	int L = LN[frame];
 
 	int tmp = 0;
 	
@@ -97,5 +112,6 @@ void chien_search_kernel( int* powAlpha, int* lambda, int* el, int* kk, int L, i
 		int k = atomicAdd( kk, 1 );
 		// roots inversion give the error locations
 		el[k] = (MAXN-i)%MAXN;
+	}
 	}
 }

@@ -82,10 +82,10 @@ void gfField(int m, // Base 2 logarithm of cardinality of the Field
 bool error_detection(char* codeword);
 
 /*********************** Error correction   *******************************/
-void BerlMass( );
+void BerlMass( int nMulti = 1 );
 
 /*********************** final step of BCH decoder ********************************/
-void BCH_final_dec( char* message, char* codeword);
+void BCH_final_dec( char* message, char* codeword, int nMulti = 1 );
 
 public:
 
@@ -95,14 +95,14 @@ void release();
 void printNK(char* message, char* codeword, int length);
 
 /*********************** verify result  *******************************/
-bool verifyResult( char* message, char* messageRef);
+bool verifyResult( char* message, char* messageRef, int nMulti = 1);
 
 /*********************** Message generator **********************************/
 void message_gen(int n,int k, unsigned long int  *seed, char* message);
 
 public:
 
-void initialize();
+void initialize( int nMulti );
 
 void setCode( int rate, int type );
 
@@ -112,7 +112,7 @@ int getK( );
 /*********************** Serial BCH encoder ********************************/
 void encode( char* message, char* codeword);
 
-void decode( char* message, char* codeword);
+void decode( char* message, char* codeword, int nMulti = 1 );
 
 void simulateError( char* codeword, int nErrorCount=12 );
 
@@ -131,7 +131,7 @@ private:
 	int *el;
 	int *reg;
 
-	int S[(MAXT + DRIFT)*2];          // Syndrome vector
+	int *S;          // Syndrome vector
 
 	int	code_rate; 
 	int	code_type; 
@@ -140,6 +140,9 @@ private:
 #ifdef USE_GPU
 	bch_gpu	m_bch_gpu;
 #endif
+
+	int		m_nMultiMax;
+
 };
 
 #endif

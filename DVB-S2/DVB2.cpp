@@ -269,7 +269,12 @@ DVB2::DVB2(void)
     m_dnp   = 0;// No delted null packets
     m_frame_offset_bits = 0;
     m_params_changed = 1;
+
+	m_bitLDPC = new char[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
+	m_bitBCH = new char[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
 }
 DVB2::~DVB2(void)
 {
+	delete[] m_bitLDPC;
+	delete[] m_bitBCH;
 }

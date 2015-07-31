@@ -37,7 +37,7 @@ protected:
 	void reorder_softbit();
 
 	void ldpc_decode();
-	void bch_decode();
+	void bch_decode( int nMulti = 1 );
 	void bb_randomise_decode();
 	void transport_packet_decode_crc();
 	bool decode_bbheader();

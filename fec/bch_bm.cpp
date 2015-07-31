@@ -277,31 +277,43 @@ bool BCH_BM::error_detection(  char* codeword)
 /*********************** Error correction   *******************************/
 /***************************************************************************/
 
-void BCH_BM::BerlMass( )
+void BCH_BM::BerlMass( int nMulti )
 
 {
 	int t2 = 2*tCapacity;
-	int j,L,l,i;
+	int j,/*L,*/l,i;
 	int d, dm, tmp;
 	int *T, *c, *p, *lambda;
+	int *TN, *cN, *pN, *lambdaN;
 	// Allocation and initialization
 	// Auto-Regressive-Filter coefficients computed at the previous step
-	p = (int*) calloc(t2,sizeof(int));
+	pN = (int*) calloc(t2*nMulti,sizeof(int));
 	// Auto-Regressive-Filter coefficients computed at the current step
-	c = (int*) calloc(t2,sizeof(int));
+	cN = (int*) calloc(t2*nMulti,sizeof(int));
 	// Temporary array
-	T = (int*) calloc(t2,sizeof(int));
+	TN = (int*) calloc(t2*nMulti,sizeof(int));
 	// error location array (found by Chien Search)
 	//el = (int*) calloc(t2,sizeof(int));
 	// Error polynomial locator
-	lambda = (int*) calloc(t2,sizeof(int));
+	lambdaN = (int*) calloc(t2*nMulti,sizeof(int));
 
-	memset( el, -1, sizeof(int)*MAXT );
+	int* LN = (int*) calloc( nMulti,sizeof(int));
+
+	memset( el, -1, sizeof(int)*MAXT*nMulti );
+
+	for ( int frame=0;frame<nMulti;frame++ )
+	{
+	
+	T = TN + frame * t2;
+	c = cN + frame * t2 ;
+	p = pN + frame * t2 ;
+	lambda = lambdaN + frame * t2 ;
+	int& L = LN[frame];
 
 	// Inizialization step
 	c[0] = 1;
 	p[0] = 1;
-	L = 0;
+	//L = 0;
 	l = 1;
 	dm = 1;
 
@@ -309,13 +321,13 @@ void BCH_BM::BerlMass( )
 	for (j = 0; j < t2; j++)
 	{
 		// Discrepancy computation
-		if(S[j] == -1)
+		if(S[j+frame*t2] == -1)
 			d = 0;
 		else
-			d = powAlpha[S[j]];
+			d = powAlpha[S[j+frame*t2]];
 		for(i = 1; i <= L;i++)
-			if(S[j-i] >= 0 && c[i] > 0)
-			d ^= powAlpha[(indexAlpha[c[i]]+ S[j-i])%MAXN];
+			if(S[j-i+frame*t2] >= 0 && c[i] > 0)
+			d ^= powAlpha[(indexAlpha[c[i]]+ S[j-i+frame*t2])%MAXN];
 			// exponential rule
 
 		if( d == 0)
@@ -352,8 +364,7 @@ void BCH_BM::BerlMass( )
 		}
 	}
 
-
-
+	
 /********** Storing of error locator polynomial coefficient **********/
 	for(i = 0; i <=L; i++)
 	{
@@ -362,19 +373,21 @@ void BCH_BM::BerlMass( )
 
 	}
 
+	}
+
 /**************    Chien search   **************************/
 /*******************   Roots searching  ***********************/
 
 #ifdef USE_GPU
 
-	m_bch_gpu.chienSearch( lambda, el, L );
+	m_bch_gpu.chienSearch( lambdaN, el, LN, nMulti );
 
 #else
 
 	int kk = 0;
 	for(i = 0; i < MAXN; i++)
 	{
-		for(j = 1, tmp = 0; j <=L; j++)
+		for(j = 1, tmp = 0; j <=LN[0]; j++)
 			tmp ^= powAlpha[(lambda[j]+i*j)%MAXN];
 		if (tmp == 1)
 			// roots inversion give the error locations
@@ -385,8 +398,8 @@ void BCH_BM::BerlMass( )
 
 #endif	
 
-	free(T); free(c); free(p); free(lambda); //free(el);
-
+	free(TN); free(cN); free(pN); free(lambdaN); //free(el);
+	free(LN);
 }
 
 
@@ -405,31 +418,35 @@ void BCH_BM::printNK( char* message, char* codeword, int length )
 	std::cout << std::endl;
 }
 
-void BCH_BM::BCH_final_dec(  char* message, char* codeword )
+void BCH_BM::BCH_final_dec(  char* message, char* codeword, int nMulti )
 {
+	for(int frame = 0; frame < nMulti; frame ++ ) {
+
 #ifdef MESSAGE_AS_TAIL
 	for (int i=n-1;i>=n-k;i--)
 #else
 	for (int i=0;i<k;i++)
 #endif
-		message[i] = codeword[i];
+		message[i+frame*k] = codeword[i+frame*n];
+	}
 }
 
-bool BCH_BM::verifyResult(  char* message, char* messageRef )
+bool BCH_BM::verifyResult(  char* message, char* messageRef, int nMulti )
 {
 	bool bSuccess = true;
+	for(int frame = 0; frame < nMulti; frame ++ ) {
 #ifdef MESSAGE_AS_TAIL
 	for (int i=n-1;i>=n-k;i--)
 #else
 	for (int i=0;i<k;i++)
 #endif
 	{
-		if( message[i] != messageRef[i])	{
+		if( message[i+frame*k] != messageRef[i])	{
 			bSuccess = false;
 			break;
 		}
 	}
-
+	}
 	return bSuccess;
 }
 
@@ -449,7 +466,8 @@ BCH_BM::BCH_BM()
 	// Galois Field Creation
 	gfField(mShort, 32+8+2+1, powAlphaShort, indexAlphaShort);
 
-	el = (int*) calloc(MAXT*2,sizeof(int));
+	m_nMultiMax = 10;
+
 	reg = (int*)calloc(MAXR,sizeof(int));
 }
 
@@ -458,8 +476,10 @@ BCH_BM::~BCH_BM()
 	release();
 }
 
-void BCH_BM::initialize()
+void BCH_BM::initialize( int nMulti )
 {
+	m_nMultiMax = nMulti;
+	el = (int*) calloc(MAXT*2 * m_nMultiMax,sizeof(int));
 }
 
 void BCH_BM::release()
@@ -472,12 +492,14 @@ void BCH_BM::release()
 	free( reg );
 	el = reg = NULL;
 
+	delete[] S;
+
 #ifdef USE_GPU
 	m_bch_gpu.release();
 #endif
 }
 
-void BCH_BM::decode(  char* messageRecv, char* codeword )
+void BCH_BM::decode(  char* messageRecv, char* codeword, int nMulti /*= 1*/ )
 {
 	float	timerStepValue[TIME_STEP];
 
@@ -490,7 +512,7 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 	bool errCode = false;
 
 #ifdef	USE_GPU
-	errCode = m_bch_gpu.error_detection(codeword);// 1ms
+	errCode = m_bch_gpu.error_detection(codeword, nMulti);// 1ms
 #else
 	errCode = error_detection(codeword);// 7 ms
 #endif
@@ -506,7 +528,7 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 		fprintf(stdout,"BCH Errors detected!.....\n");//Decoding by Berlekamp-Massey algorithm
 #endif
 
-		BerlMass();
+		BerlMass( nMulti );
 
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 3 ms
@@ -514,14 +536,15 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
 
+		for( int frame = 0; frame<nMulti; frame ++ ) {
 		bool success = true;
 		vector<int> errors;
 		for(int i = 0; i <MAXT; i++) 
 		{
-			if ( -1 != el[i] )
+			if ( -1 != el[i+MAXT*2*frame] )
 			{
-				codeword[ el[i] ] ^= 1;
-				errors.push_back( el[i] );
+				codeword[ el[i+MAXT*2*frame] + frame*n ] ^= 1;
+				errors.push_back( el[i+MAXT*2*frame] );
 			}
 		}
 #if OUTPUT_ERROR_POSITION
@@ -530,20 +553,25 @@ void BCH_BM::decode(  char* messageRecv, char* codeword )
 			fprintf(stdout,"%d\t",errors[i]);
 
 		if(success) {
-		fprintf(stdout,"\nSuccessful decoding!\n----------------------\n");};
-		
+		fprintf(stdout,"\nSuccessful decoding!\n----------------------\n");};	
+
+		fprintf(stdout,"\nFrame %d \n", frame);
+
+#endif
+		}
+
 		sdkStopTimer( &timerStep );
 		timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.8 ms
 
 		sdkResetTimer( &timerStep );
 		sdkStartTimer( &timerStep );
-#endif
+
 	}
 	else
 		fprintf(stdout,"\n\nNo errors detected!\n------------------------------\n");
 
 
-	BCH_final_dec(messageRecv, codeword);
+	BCH_final_dec(messageRecv, codeword, nMulti );
 
 	sdkStopTimer( &timerStep );
 	timerStepValue[nTimeStep++] = sdkGetTimerValue( &timerStep );// 0.06 ms
@@ -660,9 +688,11 @@ void BCH_BM::setCode( int rate, int type )
 
 	int nS = (MAXT + DRIFT)*2;
 
+	S = new int[(MAXT + DRIFT)*2 * m_nMultiMax];
+
 #ifdef USE_GPU
 	m_bch_gpu.initialize( powAlpha, indexAlpha, mNormal, 
-		S, nS, n, tCapacity, MAXN, MAXT );
+		S, nS, n, tCapacity, MAXN, MAXT, m_nMultiMax );
 #endif
 }
 

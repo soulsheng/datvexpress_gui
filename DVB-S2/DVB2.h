@@ -155,8 +155,8 @@ protected:
     const static int ldpc_tab_8_9S[40][5];
 
 
-	char	m_bitLDPC[FRAME_CACHE_COUNT*FRAME_SIZE_NORMAL];
-	char	m_bitBCH[FRAME_SIZE_NORMAL];
+	char	*m_bitLDPC;
+	char	*m_bitBCH;
 	BCH_BM	bch;
 
     Ldpc_encode_table m_ldpc_encode;

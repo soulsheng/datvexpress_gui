@@ -524,31 +524,36 @@ void DVBS2_DECODE::ldpc_decode()
 				m_frame[i*nConstellationType+j] = m_bitLDPC[i*nConstellationType+j];
 }
 
-void DVBS2_DECODE::bch_decode()
+void DVBS2_DECODE::bch_decode( int nMulti )
 {
-	for ( int j = 0;j<m_nMulti;j++ ) {
-
-	m_frame = m_frameMulti + j*FRAME_SIZE_NORMAL;
 
 	// b m_frame[n] -> b m_frame[k] 
 	if ( !m_bDecodeSoft )
 		return;
 
+	int nSizeParity = m_format[0].kldpc - m_format[0].kbch;
+
+	for ( int j = 0;j<nMulti;j++ ) {
+
+	m_frame = m_frameMulti + j*FRAME_SIZE_NORMAL;
+	char* bitLDPC = m_bitLDPC + j*bch.getN();
+
 	//for(int i=0;i<FRAME_SIZE_NORMAL;i++)
 	//	m_bitLDPC[i] = m_frame[i];
 
-	int nSizeParity = m_format[0].kldpc - m_format[0].kbch;
 
 	for(int i=0;i<m_format[0].kbch;i++)
-		m_bitLDPC[nSizeParity + i] = m_frame[i];
+		bitLDPC[nSizeParity + i] = m_frame[i];
 
 	for(int i=0;i<nSizeParity;i++)
-		m_bitLDPC[i] = m_frame[m_format[0].kbch + i];
+		bitLDPC[i] = m_frame[m_format[0].kbch + i];
+	}
 
-	bch.decode( m_bitBCH, m_bitLDPC );
+	bch.decode( m_bitBCH, m_bitLDPC, nMulti );
 
+	for ( int j = 0;j<nMulti;j++ ) {
 	for(int i=0;i<m_format[0].kbch;i++)
-		m_frame[i] = m_bitBCH[nSizeParity + i];
+		m_frameMulti[i + j*FRAME_SIZE_NORMAL] = m_bitBCH[nSizeParity + i + j*bch.getK()];
 	}
 }
 
@@ -912,7 +917,7 @@ void DVBS2_DECODE::initialize()
 
 	ldpc.initialize(&m_codes);
 
-	bch.initialize();
+	bch.initialize( m_nMulti );
 #ifdef USE_GPU
 	m_ldpc_gpu.initialize(&m_codes, &m_Symbols[0][0], m_nMulti);
 #endif
@@ -1054,7 +1059,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int& nMulti /*= 5 */ )
 #endif
 
 		// BCH encode the BB Frame
-		bch_decode();
+		bch_decode( m_nMulti );
 
 		// Yes so now Scramble the BB frame
 		bb_randomise_decode();
