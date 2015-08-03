@@ -1,6 +1,8 @@
 
 #pragma	once
 
+#include <cuda_runtime.h>
+#include <time.h>
 
 class	driverUpdataVar
 {
@@ -32,4 +34,6 @@ private:
 	int *d_mvc, *d_mcv;
 	int *d_input;	char *d_output;
 
+	clock_t *h_timer, *d_timer;
+	int nBlockNum;
 };

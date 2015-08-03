@@ -20,13 +20,16 @@ using namespace std;
 __global__ 
 void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int* sumX1, const int* n_mcv, const int* iind, const int * n_LLRin, 
 	char * n_LLRout, int* n_mvc, 
-	int nmaxX1, int nmaxX2, int nFrame ) // not used, just for testing performance bound
+	int nmaxX1, int nmaxX2, int nFrame,
+	clock_t *timer ) // not used, just for testing performance bound
 {	//	mcv const(input)-> mvc (output)
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	
 	if( i>= nvar )
 		return;
-	
+
+	if( threadIdx.x == 0 ) timer[blockIdx.x] = clock();
+
 	for( int frame = 0; frame < nFrame; frame ++ )	{
 
 	const int	*LLRin	= n_LLRin + frame * nvar;
@@ -38,13 +41,13 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 
 	int m[MAX_LOCAL_CACHE];
 
-	//if( i== nvar )// 50 us
+	//if( i== nvar )// 50 us,	500k ck
 	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 		m[jp] = mcv[ iind[i + jp*nvar] ];
 	}
 
-	//if( i== nvar )// 3 us
+	//if( i== nvar )// 3 us,	4k ck
 	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 		mvc_temp += m[jp];
@@ -52,12 +55,15 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 
 	LLRout[i] = mvc_temp<0;
 	
-	//if( i== nvar )// 7 us
+	//if( i== nvar )// 7 us,	50k ck
 	{
 	for (int jp = 0; jp < sumX1[i]; jp++)
 			mvc[i + jp*nvar] = mvc_temp - m[jp];
 	}
 	}
+
+	if( threadIdx.x == 0 ) timer[blockIdx.x + gridDim.x] = clock();
+
 }
 
 
@@ -112,11 +118,11 @@ bool driverUpdataVar::launch()
 
 	dim3 block( SIZE_BLOCK );
 	dim3 grid( (nvar + block.x - 1) / block.x );
-
+	nBlockNum = grid.x;
 	updateVariableNodeOpti_kernel<<< grid, block >>>( nvar, ncheck, 
 		d_sumX1, d_mcv, d_iind, d_input, 
 		d_output, d_mvc, 
-		nmaxX1, nmaxX2, N_FRAME );// 70ms kernel, 170ms launch
+		nmaxX1, nmaxX2, N_FRAME, d_timer );// 70ms kernel, 170ms launch
 
 #endif
 
@@ -128,6 +134,16 @@ bool driverUpdataVar::verify()
 {
 	cudaMemcpy( mvc, d_mvc, nvar * nmaxX1 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
 	cudaMemcpy( output, d_output, nvar * sizeof(char) * N_FRAME, cudaMemcpyDeviceToHost );
+
+		cudaMemcpy( h_timer, d_timer, 2 * nBlockNum * sizeof(int), cudaMemcpyDeviceToHost );
+
+	clock_t deltaTime = 0;
+    for (int i = 0; i < 10; i++)
+    {
+		deltaTime += h_timer[nBlockNum+i] - h_timer[i];
+    }
+
+    printf("Total clocks = %d\n", (int)( deltaTime*1.0f/10 ) );// 1.11M 
 
 	// mvc
 	int i = 0;
@@ -247,6 +263,8 @@ driverUpdataVar::driverUpdataVar( )
 	cudaMalloc( (void**)&d_mvc, nvar * nmaxX1 * sizeof(int) * N_FRAME );
 	cudaMemset( d_mvc, 0, nvar * nmaxX1 * sizeof(int) * N_FRAME );
 
+	h_timer = (clock_t*)malloc( sizeof(clock_t) * 1000 );
+	cudaMalloc( (void**)&d_timer, sizeof(clock_t) * 1000 );
 }
 
 driverUpdataVar::~driverUpdataVar()
@@ -258,10 +276,12 @@ driverUpdataVar::~driverUpdataVar()
 	free(input);	free(output);
 
 	free(ref_mvc);	free(ref_output);
+	free(h_timer);
 
 	// device
 	cudaFree( d_sumX1 );
 	cudaFree( d_iind );	
 	cudaFree( d_mvc );		cudaFree( d_mcv );
 	cudaFree( d_input );	cudaFree( d_output );
+	cudaFree( d_timer );
 }
