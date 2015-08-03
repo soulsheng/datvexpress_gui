@@ -75,12 +75,16 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	const short int Dint1, const short int Dint2, const short int Dint3, 
 	const int QLLR_MAX,
 	int* n_mcv,
-	int nmaxX1, int nmaxX2, int nFrame )
+	int nmaxX1, int nmaxX2, int nFrame,
+	clock_t *timer )
 {	//	mvc const(input)-> mcv (output)
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if( j>= ncheck )
 		return;
+
+
+	if( threadIdx.x == 0 ) timer[blockIdx.x] = clock();
 
 	__shared__ int s_logexp_table[TABLE_SIZE_DINT2];
 
@@ -96,7 +100,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	int m[MAX_LOCAL_CACHE];
 	int jIndex[MAX_LOCAL_CACHE]={0};
 	
-	//if( j== ncheck )// 20 us
+	//if( j== ncheck )// 20 us,	7k ck
 	{
 		for(int i = 0; i < sumX2[j]; i++ ) 
 			jIndex[i] = jind[j+i*ncheck];
@@ -109,7 +113,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	int			*mcv	= n_mcv + frame * ncheck * nmaxX2;
 
 
-	//if( j== ncheck )// 50 us
+	//if( j== ncheck )// 50 us, 380k ck
 	{
 		for(int i = 0; i < sumX2[j]; i++ ) 
 			m[i] = mvc[ jIndex[i] ];
@@ -120,7 +124,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	nodes--;
 
 	// compute partial sums from the left and from the right
-	//if( j== ncheck )// 25 us
+	//if( j== ncheck )// 25 us, 150k ck
 	{
 		ml[0] = m[0];
 		mr[0] = m[nodes];
@@ -130,7 +134,7 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 		}
 	}
 	// merge partial sums
-	//if( j== ncheck )// 20 us
+	//if( j== ncheck )// 20 us, 150k ck
 	{	
 		mcv[j] = mr[nodes-1];
 		mcv[j+nodes*ncheck] = ml[nodes-1];
@@ -139,6 +143,10 @@ void updateCheckNodeOpti_kernel( const int ncheck, const int nvar,
 	}
 
 	}// nFrame
+
+
+	if( threadIdx.x == 0 ) timer[blockIdx.x + gridDim.x] = clock();
+
 }
 
 
@@ -193,11 +201,11 @@ bool driverUpdataChk::launch()
 
 	dim3 block( SIZE_BLOCK );
 	dim3 grid( (nvar + block.x - 1) / block.x );
-
+	nBlockNum = grid.x;
 	updateCheckNodeOpti_kernel<<< grid, block >>>( ncheck, nvar, 
 		d_sumX2, d_mvc, d_jind, d_logexp_table,
 		Dint1, Dint2, Dint3, QLLR_MAX,
-		d_mcv, nmaxX1, nmaxX2, N_FRAME );
+		d_mcv, nmaxX1, nmaxX2, N_FRAME, d_timer );
 
 #endif
 
@@ -208,6 +216,15 @@ bool driverUpdataChk::launch()
 bool driverUpdataChk::verify()
 {
 	cudaMemcpy( mcv, d_mcv, ncheck * nmaxX2 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToHost );
+	cudaMemcpy( h_timer, d_timer, 2 * nBlockNum * sizeof(int), cudaMemcpyDeviceToHost );
+
+	clock_t deltaTime = 0;
+    for (int i = 0; i < 10; i++)
+    {
+		deltaTime += h_timer[nBlockNum+i] - h_timer[i];
+    }
+
+    printf("Total clocks = %d\n", (int)( deltaTime*1.0f/10 ) );// 1.11M 
 
 	// mcv
 	int i = 0;
@@ -309,6 +326,8 @@ driverUpdataChk::driverUpdataChk()
 	cudaMalloc( (void**)&d_logexp_table, Dint2 * sizeof(int) );		// const 1.2 K
 	cudaMemcpy( d_logexp_table, logexp_table, Dint2 * sizeof(int), cudaMemcpyHostToDevice );
 
+	h_timer = (clock_t*)malloc( sizeof(clock_t) * 1000 );
+	cudaMalloc( (void**)&d_timer, sizeof(clock_t) * 1000 );
 }
 
 driverUpdataChk::~driverUpdataChk()
@@ -320,10 +339,12 @@ driverUpdataChk::~driverUpdataChk()
 
 	free(ref_mcv);
 	free(logexp_table);
+	free(h_timer);
 
 	// device
 	cudaFree( d_sumX2 );
 	cudaFree( d_jind );
 	cudaFree( d_mvc );		cudaFree( d_mcv );
 	cudaFree( d_logexp_table );
+	cudaFree( d_timer );
 }

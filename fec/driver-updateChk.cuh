@@ -1,6 +1,8 @@
 
 #pragma	once
 
+#include <cuda_runtime.h>
+#include <time.h>
 
 class	driverUpdataChk
 {
@@ -36,4 +38,6 @@ private:
 
 	int* d_logexp_table ;
 
+	clock_t *h_timer, *d_timer;
+	int nBlockNum;
 };
