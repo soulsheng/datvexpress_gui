@@ -504,10 +504,9 @@ void DVBS2_DECODE::ldpc_decode()
 	if ( !m_bDecodeSoft )
 		return;
 
-	if( !m_bUseGPU )
+#ifndef USE_GPU
 		ldpc.bp_decode( m_soft_bits, m_bitLDPC, m_format[0].code_rate  );
-#ifdef USE_GPU
-	else
+#else
 		m_ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
 #endif
 
@@ -671,7 +670,6 @@ DVBS2_DECODE::DVBS2_DECODE()
 {
 	m_bDecodeSoft = true;
 
-	m_bUseGPU = true;
 	
 	pSymbolsTemplate = NULL;
 	nSymbolSize = -1;
@@ -1018,6 +1016,8 @@ void DVBS2_DECODE::decode_soft( scmplx* sym, double N0 )
 	// step	3:	ldpc decode
 #ifdef USE_GPU
 	m_ldpc_gpu.bp_decode_once( m_soft_bits, m_bitLDPC, m_format[0].code_rate );
+#else
+	ldpc.bp_decode( m_soft_bits, m_bitLDPC, m_format[0].code_rate  );
 #endif
 
 	// step	4:	cast type, char -> int
@@ -1051,7 +1051,7 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int& nMulti /*= 5 */ )
 
 		// decode the data
 #ifndef USE_GPU
-		decode_soft( &m_pl[90], N0 );
+		decode_soft( &pl[90], N0 );
 #else	
 		m_ldpc_gpu.decode_soft( &pl[90], N0, m_payload_symbols, nSymbolSize, m_format[0].constellation + 2,
 			m_frameMulti, m_format[0].code_rate,
@@ -1084,7 +1084,9 @@ int DVBS2_DECODE::decode_ts_frame( scmplx* pl, int& nMulti /*= 5 */ )
 void DVBS2_DECODE::release()
 {
 	// gpu release
+#ifdef USE_GPU
 	m_ldpc_gpu.release();
+#endif
 	bch.release();
 
 	cudaDeviceReset();

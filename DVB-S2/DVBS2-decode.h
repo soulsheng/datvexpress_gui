@@ -72,7 +72,6 @@ private:
 #ifdef USE_GPU
 	ldpc_gpu	m_ldpc_gpu;
 #endif
-	bool	m_bUseGPU;
 
 	LDPC_CodeFactory	m_codes;
 
