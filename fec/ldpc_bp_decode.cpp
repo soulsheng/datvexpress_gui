@@ -225,69 +225,14 @@ void ldpc_decoder::updateVariableNode( int nvar, int* sumX1, int* mcv, int* mvc,
 		
 		int mvc_temp = LLRin[i];
 
-		switch (sumX1[i]) {
-		case 0:
-			cout << "LDPC_Code::bp_decode(): sumX1[i]=0" << endl;
-		case 1: {
-			/* This case is rare but apparently occurs for codes used in
-			the DVB-T2 standard.
-			*/
-			int m0 = mcv[iind[i]];
-			mvc[i] = LLRin[i];
-			mvc_temp = LLRin[i] + m0;
-			break;
-				}
-		case 2: {
-			int m0 = mcv[iind[i]];
-			int i1 = i + nvar;
-			int m1 = mcv[iind[i1]];
-			mvc[i] = LLRin[i] + m1;
-			mvc[i1] = LLRin[i] + m0;
-			mvc_temp = mvc[i1] + m1;
-			break;
-				}
-		case 3: {
-			int i0 = i;
-			int m0 = mcv[iind[i0]];
-			int i1 = i0 + nvar;
-			int m1 = mcv[iind[i1]];
-			int i2 = i1 + nvar;
-			int m2 = mcv[iind[i2]];
-			mvc_temp = LLRin[i] + m0 + m1 + m2;
-			mvc[i0] = mvc_temp - m0;
-			mvc[i1] = mvc_temp - m1;
-			mvc[i2] = mvc_temp - m2;
-			break;
-				}
-		case 4: {
-			int i0 = i;
-			int m0 = mcv[iind[i0]];
-			int i1 = i0 + nvar;
-			int m1 = mcv[iind[i1]];
-			int i2 = i1 + nvar;
-			int m2 = mcv[iind[i2]];
-			int i3 = i2 + nvar;
-			int m3 = mcv[iind[i3]];
-			mvc_temp = LLRin[i] + m0 + m1 + m2 + m3;
-			mvc[i0] = mvc_temp - m0;
-			mvc[i1] = mvc_temp - m1;
-			mvc[i2] = mvc_temp - m2;
-			mvc[i3] = mvc_temp - m3;
-			break;
-				}
-		default:   { // differential update
-			int index_iind = i; // tracks i+jp*nvar
-			for (int jp = 0; jp < sumX1[i]; jp++) {
-				mvc_temp +=  mcv[iind[index_iind]];
-				index_iind += nvar;
-			}
-			index_iind = i;  // tracks i+j*nvar
-			for (int j = 0; j < sumX1[i]; j++) {
-				mvc[index_iind] = mvc_temp - mcv[iind[index_iind]];
-				index_iind += nvar;
-			}
-				   }
+		for (int jp = 0; jp < sumX1[i]; jp++) {
+			mvc_temp +=  mcv[iind[ i + jp*nvar]];
 		}
+
+		for (int j = 0; j < sumX1[i]; j++) {
+			mvc[i + j*nvar] = mvc_temp - mcv[iind[i + j*nvar]];
+		}
+		
 
 		LLRout[i] = mvc_temp<0;
 
