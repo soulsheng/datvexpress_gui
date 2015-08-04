@@ -102,103 +102,13 @@ void ldpc_decoder::updateCheckNode( int ncheck, int* sumX2, int* mcv, int* mvc, 
 	for (int j = 0; j < ncheck; j++) {
 		// The check node update calculations are hardcoded for degrees
 		// up to 6.  For larger degrees, a general algorithm is used.
-		switch (sumX2[j]) {
-		case 0:
-			cout << "LDPC_Code::bp_decode(): sumX2[j]=0" << endl;
-		case 1:
-			cout << "LDPC_Code::bp_decode(): sumX2[j]=1" << endl;
-		case 2: {
-			mcv[j+ncheck] = mvc[jind[j]];
-			mcv[j] = mvc[jind[j+ncheck]];
-			break;
-				}
-		case 3: {
-			int j0 = j;
-			int m0 = mvc[jind[j0]];
-			int j1 = j0 + ncheck;
-			int m1 = mvc[jind[j1]];
-			int j2 = j1 + ncheck;
-			int m2 = mvc[jind[j2]];
-			mcv[j0] = Boxplus(m1, m2, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j1] = Boxplus(m0, m2, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j2] = Boxplus(m0, m1, Dint1, Dint2, Dint3, logexp_table);
-			break;
-				}
-		case 4: {
-			int j0 = j;
-			int m0 = mvc[jind[j0]];
-			int j1 = j0 + ncheck;
-			int m1 = mvc[jind[j1]];
-			int j2 = j1 + ncheck;
-			int m2 = mvc[jind[j2]];
-			int j3 = j2 + ncheck;
-			int m3 = mvc[jind[j3]];
-			int m01 = Boxplus(m0, m1, Dint1, Dint2, Dint3, logexp_table);
-			int m23 = Boxplus(m2, m3, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j0] = Boxplus(m1, m23, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j1] = Boxplus(m0, m23, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j2] = Boxplus(m01, m3, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j3] = Boxplus(m01, m2, Dint1, Dint2, Dint3, logexp_table);
-			break;
-				}
-		case 5: {
-			int j0 = j;
-			int m0 = mvc[jind[j0]];
-			int j1 = j0 + ncheck;
-			int m1 = mvc[jind[j1]];
-			int j2 = j1 + ncheck;
-			int m2 = mvc[jind[j2]];
-			int j3 = j2 + ncheck;
-			int m3 = mvc[jind[j3]];
-			int j4 = j3 + ncheck;
-			int m4 = mvc[jind[j4]];
-			int m01 = Boxplus(m0, m1, Dint1, Dint2, Dint3, logexp_table);
-			int m02 = Boxplus(m01, m2, Dint1, Dint2, Dint3, logexp_table);
-			int m34 = Boxplus(m3, m4, Dint1, Dint2, Dint3, logexp_table);
-			int m24 = Boxplus(m2, m34, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j0] = Boxplus(m1, m24, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j1] = Boxplus(m0, m24, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j2] = Boxplus(m01, m34, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j3] = Boxplus(m02, m4, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j4] = Boxplus(m02, m3, Dint1, Dint2, Dint3, logexp_table);
-			break;
-				}
-		case 6: {
-			int j0 = j;
-			int m0 = mvc[jind[j0]];
-			int j1 = j0 + ncheck;
-			int m1 = mvc[jind[j1]];
-			int j2 = j1 + ncheck;
-			int m2 = mvc[jind[j2]];
-			int j3 = j2 + ncheck;
-			int m3 = mvc[jind[j3]];
-			int j4 = j3 + ncheck;
-			int m4 = mvc[jind[j4]];
-			int j5 = j4 + ncheck;
-			int m5 = mvc[jind[j5]];
-			int m01 = Boxplus(m0, m1, Dint1, Dint2, Dint3, logexp_table);
-			int m23 = Boxplus(m2, m3, Dint1, Dint2, Dint3, logexp_table);
-			int m45 = Boxplus(m4, m5, Dint1, Dint2, Dint3, logexp_table);
-			int m03 = Boxplus(m01, m23, Dint1, Dint2, Dint3, logexp_table);
-			int m25 = Boxplus(m23, m45, Dint1, Dint2, Dint3, logexp_table);
-			int m0145 = Boxplus(m01, m45, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j0] = Boxplus(m1, m25, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j1] = Boxplus(m0, m25, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j2] = Boxplus(m0145, m3, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j3] = Boxplus(m0145, m2, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j4] = Boxplus(m03, m5, Dint1, Dint2, Dint3, logexp_table);
-			mcv[j5] = Boxplus(m03, m4, Dint1, Dint2, Dint3, logexp_table);
-			break;
-				}
-		default: {
+
 			int nodes = sumX2[j];
 
 			nodes--;
-			jj[0] = j;
-			m[0] = mvc[jind[jj[0]]];
-			for(int i = 1; i <= nodes; i++ ) {
-				jj[i] = jj[i-1] + ncheck;
-				m[i] = mvc[jind[jj[i]]];
+
+			for(int i = 0; i <= nodes; i++ ) {
+				m[i] = mvc[jind[j+i*ncheck]];
 			}
 
 			// compute partial sums from the left and from the right
@@ -210,12 +120,12 @@ void ldpc_decoder::updateCheckNode( int ncheck, int* sumX2, int* mcv, int* mvc, 
 			}
 
 			// merge partial sums
-			mcv[jj[0]] = mr[nodes-1];
-			mcv[jj[nodes]] = ml[nodes-1];
+			mcv[j] = mr[nodes-1];
+			mcv[j+nodes*ncheck] = ml[nodes-1];
 			for(int i = 1; i < nodes; i++ )
-				mcv[jj[i]] = Boxplus( ml[i-1], mr[nodes-1-i], Dint1, Dint2, Dint3, logexp_table );
-				 }
-		}  // switch statement
+				mcv[j+i*ncheck] = Boxplus( ml[i-1], mr[nodes-1-i], Dint1, Dint2, Dint3, logexp_table );
+
+		
 	}
 }
 
