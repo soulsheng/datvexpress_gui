@@ -20,6 +20,13 @@ using namespace std;
 #define		BLOCK_DIM		256
 #define		BLOCK_NUM_MAX	512
 //extern __shared__ int s_array[ ];
+#define		USE_TEXTURE_ADDRESS	0
+
+#if USE_TEXTURE_ADDRESS
+texture<int, 1, cudaReadModeElementType> texAlpha;
+cudaArray* arr_alpha;
+cudaChannelFormatDesc channelDesc;
+#endif
 
 __global__ 
 void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int i, int MAXN, int n, int nFrame )
@@ -36,7 +43,11 @@ void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int
 
 	s_codeword[ threadIdx.x ] = codeword[ j ];
 	if(s_codeword[ threadIdx.x ] && j<n)
-  		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+#if USE_TEXTURE_ADDRESS
+		s_powAlpha[ threadIdx.x ]=  tex1D(texAlpha, ((i+1)*j)%MAXN );
+#else 	
+		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
+#endif
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
 
@@ -172,6 +183,19 @@ driverErrorDetection::driverErrorDetection( )
 	cudaMalloc( (void**)&d_SCache, m_nGrid*sizeof(int) * N_FRAME );
 	cudaMemset( d_SCache, 0, m_nGrid*sizeof(int) * N_FRAME );
 
+#if USE_TEXTURE_ADDRESS
+	// cuda texture ------------------------------------------------------------------------------------------
+	channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindSigned);
+    cudaError_t err = cudaMallocArray(&arr_alpha, &channelDesc, m_nAlpha, 1);
+    cudaMemcpyToArray(arr_alpha, 0, 0, d_powAlpha, m_nAlpha * sizeof(int), cudaMemcpyDeviceToDevice);
+
+	texAlpha.addressMode[0] = cudaAddressModeClamp;
+    texAlpha.filterMode = cudaFilterModePoint;
+    texAlpha.normalized = false;
+
+	cudaBindTextureToArray(texAlpha, arr_alpha, channelDesc);
+
+#endif
 }
 
 driverErrorDetection::~driverErrorDetection()
