@@ -9,6 +9,9 @@ using namespace std;
 #include "dvbUtility.h"
 #include "itppUtility.h"
 
+#define		SIZE_BLOCK			64
+#define		USE_BLOCK			0
+
 bool ldpc_decoder::syndrome_check(char *LLR,
 	int ncheck, 
 	int* sumX2, 
@@ -131,6 +134,42 @@ void ldpc_decoder::updateCheckNode( int ncheck, int* sumX2, int* mcv, int* mvc, 
 
 void ldpc_decoder::updateVariableNode( int nvar, int* sumX1, int* mcv, int* mvc, int* iind, int * LLRin, char * LLRout ) 
 {
+#if  USE_BLOCK
+	int block = SIZE_BLOCK ;
+	int grid = (nvar + block - 1) / block ;
+
+	for (int g = 0; g < grid; g++) {
+		unsigned int nMin = (unsigned int)(-1);
+		unsigned int nMax = 0;
+	for (int t = 0; t < block; t++ ) {
+		int i = block * g + t;
+		
+		if( i >= nvar )
+			break;
+
+		int mvc_temp = LLRin[i];
+
+		for (int jp = 0; jp < sumX1[i]; jp++) {
+			mvc_temp +=  mcv[iind[ i + jp*nvar]];// iind[ i + jp*nvar]  (0~48k)
+			//printf( "%d ", iind[ i + jp*nvar] );
+			if( iind[ i + jp*nvar] > nMax )
+				nMax = iind[ i + jp*nvar];
+			if( iind[ i + jp*nvar] < nMin )
+				nMin = iind[ i + jp*nvar];
+
+		}
+
+		for (int j = 0; j < sumX1[i]; j++) {
+			mvc[i + j*nvar] = mvc_temp - mcv[iind[i + j*nvar]];
+		}
+		
+
+		LLRout[i] = mvc_temp<0;
+	}
+		printf( "block %d, (%d ~ %d, %d) \n", g, nMin, nMax, nMax-nMin );
+		//system("pause");
+	}
+#else
 	for (int i = 0; i < nvar; i++) {
 		
 		int mvc_temp = LLRin[i];
@@ -147,6 +186,7 @@ void ldpc_decoder::updateVariableNode( int nvar, int* sumX1, int* mcv, int* mvc,
 		LLRout[i] = mvc_temp<0;
 
 	}
+#endif
 }
 
 void ldpc_decoder::initializeMVC( int nvar, int* sumX1, int* mvc, int * LLRin ) 
