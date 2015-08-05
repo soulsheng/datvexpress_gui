@@ -26,9 +26,6 @@ void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int
 {
 	int j = blockIdx.x * blockDim.x + threadIdx.x ;
 
-	if( j >= n )
-		return;
-
 	__shared__ int	s_powAlpha[BLOCK_DIM] ;
 	__shared__ char	s_codeword[BLOCK_DIM] ;
 
@@ -38,7 +35,7 @@ void error_detection_kernel( char* n_codeword, int* powAlpha, int* n_SCache, int
 	int			*SCache		= n_SCache + frame * gridDim.x;
 
 	s_codeword[ threadIdx.x ] = codeword[ j ];
-	if(s_codeword[ threadIdx.x ])
+	if(s_codeword[ threadIdx.x ] && j<n)
   		s_powAlpha[ threadIdx.x ] = powAlpha[ ((i+1)*j)%MAXN ];
 	else
 		s_powAlpha[ threadIdx.x ] = 0;
