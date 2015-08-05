@@ -16,6 +16,13 @@ using namespace std;
 
 #define		USE_BLOCK_2D		0
 #define		N_FRAME				10	// time scales as long as data length scales
+#define		USE_TEXTURE_ADDRESS	0
+
+#if USE_TEXTURE_ADDRESS
+texture<int, 2, cudaReadModeElementType> texMCV;
+cudaArray* arr_mcv;
+cudaChannelFormatDesc channelDesc;
+#endif
 
 __global__ 
 void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int* sumX1, const int* n_mcv, const int* iind, const int * n_LLRin, 
@@ -43,8 +50,14 @@ void updateVariableNodeOpti_kernel( const int nvar, const int ncheck, const int*
 
 	//if( i== nvar )// 50 us,	500k ck
 	{
-	for (int jp = 0; jp < sumX1[i]; jp++)
-		m[jp] = mcv[ iind[i + jp*nvar] ];
+	for (int jp = 0; jp < sumX1[i]; jp++){
+#if USE_TEXTURE_ADDRESS
+		int index = iind[i + jp*nvar];
+		m[jp] =  tex2D(texMCV, index%ncheck, index/ncheck + frame * nmaxX2);
+#else
+		m[jp] =  mcv[ iind[i + jp*nvar] ];
+#endif
+	}
 	}
 
 	//if( i== nvar )// 3 us,	4k ck
@@ -104,6 +117,12 @@ void updateVariableNodeOpti2D_kernel( const int nvar, const int ncheck, const in
 
 bool driverUpdataVar::launch()
 {
+
+#if USE_TEXTURE_ADDRESS
+    // update the array to the texture
+    cudaMemcpyToArray(arr_mcv, 0, 0, d_mcv, ncheck * nmaxX2 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToDevice);
+#endif
+
 #if USE_BLOCK_2D
 	
 	dim3 block( SIZE_BLOCK_2D_X, MAX_LOCAL_CACHE );
@@ -265,6 +284,21 @@ driverUpdataVar::driverUpdataVar( )
 
 	h_timer = (clock_t*)malloc( sizeof(clock_t) * 1000 );
 	cudaMalloc( (void**)&d_timer, sizeof(clock_t) * 1000 );
+
+#if USE_TEXTURE_ADDRESS
+	// cuda texture ------------------------------------------------------------------------------------------
+	channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindSigned);
+    cudaError_t err = cudaMallocArray(&arr_mcv, &channelDesc, ncheck, nmaxX2 * N_FRAME);
+    cudaMemcpyToArray(arr_mcv, 0, 0, d_mcv, ncheck * nmaxX2 * sizeof(int) * N_FRAME, cudaMemcpyDeviceToDevice);
+
+	texMCV.addressMode[0] = cudaAddressModeClamp;
+	texMCV.addressMode[1] = cudaAddressModeClamp;
+    texMCV.filterMode = cudaFilterModePoint;
+    texMCV.normalized = false;
+
+	cudaBindTextureToArray(texMCV, arr_mcv, channelDesc);
+
+#endif
 }
 
 driverUpdataVar::~driverUpdataVar()
