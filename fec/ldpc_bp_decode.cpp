@@ -9,7 +9,7 @@ using namespace std;
 #include "dvbUtility.h"
 #include "itppUtility.h"
 
-#define		SIZE_BLOCK			64
+#define		SIZE_BLOCK			256
 #define		USE_BLOCK			0
 
 bool ldpc_decoder::syndrome_check(char *LLR,
