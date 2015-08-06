@@ -62,7 +62,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cudart.lib;itpp_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
@@ -83,7 +83,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>cudart.lib;itpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
@@ -93,30 +93,12 @@
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_encode.cpp" />
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_tables.cpp" />
     <ClCompile Include="..\fec\dvbUtility.cpp" />
-    <ClCompile Include="..\fec\itppUtility.cpp" />
-    <ClCompile Include="..\fec\ldpcFactory.cpp" />
-    <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
     <ClCompile Include="mainLdpc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DVB-S2\dvb2_ldpc_encode.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />
-    <ClInclude Include="..\fec\ldpcFactory.h" />
-    <ClInclude Include="..\fec\ldpc_bp_decode.h" />
     <ClInclude Include="..\fec\modulatorDefinition.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\fec\ldpc_bp_decode.cuh">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\fec\ldpc_bp_decode_kernel.cuh">
-      <FileType>Document</FileType>
-    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

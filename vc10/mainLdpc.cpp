@@ -1,5 +1,6 @@
 
 #include "dvb2_ldpc_encode.h"
+#include "dvbUtility.h"
 
 #include <iostream>
 using namespace std;
@@ -9,35 +10,31 @@ using namespace std;
 
 int main()
 {
-	char codeword[MAXN*FRAME_CACHE_COUNT],
-		message[MAXN*FRAME_CACHE_COUNT],
-		messageRec[MAXN*FRAME_CACHE_COUNT]; // information bits
+	Bit *codeword = new Bit[MAXN*FRAME_CACHE_COUNT];
+	Bit *message = new Bit[MAXN*FRAME_CACHE_COUNT];
+	Bit *messageRec = new Bit[MAXN*FRAME_CACHE_COUNT]; // information bits
 	unsigned long seed = 1;
 
-	Ldpc_encode_table	m_ldpc_encode;
+	DVB2FrameFormat	dvbs2_fmt;
 
-#if 0
-	bch.initialize( FRAME_CACHE_COUNT );
-	bch.setCode( CR_3_4, FRAME_NORMAL );
+	dvbs2_fmt.frame_type    = FRAME_NORMAL;
+	dvbs2_fmt.code_rate     = CR_3_4;
+	dvbs2_fmt.constellation = M_32APSK;
+	dvbs2_fmt.roll_off      = RO_0_35;
+	dvbs2_fmt.pilots        = 0;
+	dvbs2_fmt.dummy_frame   = 0;
+	dvbs2_fmt.null_deletion = 0;
 
-	bch.message_gen( bch.getN(), bch.getK(), &seed, message );
+	dvbs2_fmt.configure();
 
-	bch.encode( message, codeword );
+	Ldpc_encode	m_ldpc_encode;
+	m_ldpc_encode.ldpc_lookup_generate( &dvbs2_fmt );
 
-	bch.simulateError( codeword, 12 );
+	message_gen( dvbs2_fmt.nldpc, dvbs2_fmt.kldpc, &seed, message );
 
-	for(int i = 0;i<FRAME_CACHE_COUNT;i++)
-	memcpy_s( codeword + bch.getN()*i, bch.getN() * sizeof(char), codeword, bch.getN() * sizeof(char) );
+	m_ldpc_encode.ldpc_encode( codeword );
 
-	bch.decode( messageRec, codeword , FRAME_CACHE_COUNT );
-
-	bool bStatus = bch.verifyResult( messageRec, message, FRAME_CACHE_COUNT );
-
-	cudaDeviceReset();
-
-	if ( bStatus )
-		cout << "succeed" << endl; 
-	else
-		cout << "fail" << endl; 
-#endif
+	delete[]	codeword;
+	delete[]	message;
+	delete[]	messageRec;
 }
