@@ -75,3 +75,36 @@ void	writeArray(T* pArray, int nSize, char* strFileName)
 	fwrite( pArray, sizeof(T), nSize, fp);
 	fclose(fp);
 }
+
+
+int lfsr(unsigned long int *seed);
+
+
+/****************************************************************************/
+/*********************** Message generator **********************************/
+/***************************************************************************/
+
+template< typename T >
+void message_gen(int n,int k, unsigned long int  *seed, T* message, bool bRight = true)
+{
+	if( bRight )
+	{
+		int i;
+		// Message bits pseudo random generation
+		for (i=n-1;i>=n-k;i--)
+			message[i] = lfsr(seed);
+		// Zero padding
+		for(i = 0; i < n-k; i++)
+			message[i] = 0;
+	}
+	else
+	{
+		int i;
+		// Message bits pseudo random generation
+		for (i=0;i<k;i++)
+			message[i] = lfsr(seed);
+		// Zero padding
+		for(i = k; i < n-k; i++)
+			message[i] = 0;
+	}
+}

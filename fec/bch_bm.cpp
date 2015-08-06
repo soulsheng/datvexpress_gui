@@ -14,7 +14,7 @@
 #define		TIME_STEP		6	
 //#define		MESSAGE_AS_TAIL	0	// 信息位在结尾
 #define		OUTPUT_ERROR_POSITION	0
-
+#if 0
 int BCH_BM::lfsr(unsigned long int *seed)
 {
 	int b,c;
@@ -42,7 +42,7 @@ void BCH_BM::message_gen(int n,int k, unsigned long int  *seed, char* message)
 	for(i = 0; i < n-k; i++)
 		message[i] = 0;
 }
-
+#endif
 /****************************************************************************/
 /*********************** Polynomial Generators *****************************/
 /***************************************************************************/

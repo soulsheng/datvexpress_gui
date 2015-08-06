@@ -54,7 +54,7 @@ public:
 
 protected:
 /*********************** PN bit source **************************************/
-int lfsr(unsigned long int *seed);
+//int lfsr(unsigned long int *seed);
 #if 0
 /*********************** Loading matrices routine ***************************/
 void load_matrices(int n, int k);
@@ -98,7 +98,7 @@ void printNK(char* message, char* codeword, int length);
 bool verifyResult( char* message, char* messageRef, int nMulti = 1);
 
 /*********************** Message generator **********************************/
-void message_gen(int n,int k, unsigned long int  *seed, char* message);
+//void message_gen(int n,int k, unsigned long int  *seed, char* message);
 
 public:
 

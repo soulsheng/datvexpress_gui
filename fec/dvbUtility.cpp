@@ -136,3 +136,16 @@ void readFile( std::vector<int*>& paramSize, char* filename )
 
 	fclose( fp );
 }
+
+int lfsr( unsigned long int *seed )
+{
+	int b,c;
+
+	b = ( ((*seed) & (1 << 31) ) >> 31 ) ;
+
+	c =   ((*seed) & 1) ^ ( ((*seed) & (1 << 1)) >> 1 ) ^ ( ((*seed) & (1 << 21)) >> 21 ) ^ b ;
+
+	(*seed) = ((*seed) << 1) | c;
+
+	return(b);
+}

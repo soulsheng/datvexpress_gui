@@ -1,6 +1,6 @@
 
 #include "bch_bm.h"
-
+#include "dvbUtility.h"
 #include <iostream>
 using namespace std;
 
@@ -19,7 +19,7 @@ int main()
 	bch.initialize( FRAME_CACHE_COUNT );
 	bch.setCode( CR_3_4, FRAME_NORMAL );
 
-	bch.message_gen( bch.getN(), bch.getK(), &seed, message );
+	message_gen( bch.getN(), bch.getK(), &seed, message );
 
 	bch.encode( message, codeword );
 
