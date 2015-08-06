@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DA10B8A4-63DC-4513-B47B-5DFAC320613D}</ProjectGuid>
+    <ProjectGuid>{EC30811B-EF15-4E1A-99D3-2F2259F773D5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>dvbs2enc</RootNamespace>
+    <RootNamespace>bch</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -28,7 +28,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -38,15 +40,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
+    <IncludePath>../fec;../3rd/include;../Sources;../DVB-S2;$(IncludePath)</IncludePath>
     <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../;../DVB-S2;../Sources;$(FFPLAYDIR)\include;../3rd/include;../fec;$(IncludePath)</IncludePath>
-    <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../fec;../3rd/include;../Sources;../DVB-S2;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\..\bin\</OutDir>
     <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)_vc10</TargetName>
+    <LibraryPath>../3rd/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -54,12 +57,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;USE_GPU;MESSAGE_AS_TAIL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>itpp_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;itpp_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
@@ -73,51 +76,50 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;USE_GPU;MESSAGE_AS_TAIL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>itpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;itpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <CodeGeneration>compute_20,sm_20</CodeGeneration>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\DVB-S2\DVB2.cpp" />
-    <ClCompile Include="..\DVB-S2\dvb2_bbheader.cpp" />
-    <ClCompile Include="..\DVB-S2\dvb2_bch.cpp" />
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_encode.cpp" />
     <ClCompile Include="..\DVB-S2\dvb2_ldpc_tables.cpp" />
-    <ClCompile Include="..\DVB-S2\dvb2_scrambler.cpp" />
-    <ClCompile Include="..\DVB-S2\DVBS2.cpp" />
-    <ClCompile Include="..\DVB-S2\dvbs2_interleave.cpp" />
-    <ClCompile Include="..\DVB-S2\dvbs2_modulator.cpp" />
-    <ClCompile Include="..\DVB-S2\dvbs2_physical.cpp" />
-    <ClCompile Include="..\DVB-S2\dvbs2_scrambler.cpp" />
-    <ClCompile Include="..\DVB-S2\dvbs2_tables.cpp" />
-    <ClCompile Include="..\fec\bch_bm.cpp" />
     <ClCompile Include="..\fec\dvbUtility.cpp" />
     <ClCompile Include="..\fec\itppUtility.cpp" />
     <ClCompile Include="..\fec\ldpcFactory.cpp" />
     <ClCompile Include="..\fec\ldpc_bp_decode.cpp" />
-    <ClCompile Include="..\fec\modulatorFactory.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainLdpc.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\DVB-S2\DVB2.h" />
     <ClInclude Include="..\DVB-S2\dvb2_ldpc_encode.h" />
-    <ClInclude Include="..\DVB-S2\DVBS2.h" />
-    <ClInclude Include="..\DVB-S2\dvb_types.h" />
-    <ClInclude Include="..\fec\bch_bm.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />
-    <ClInclude Include="..\fec\helper_timer.h" />
-    <ClInclude Include="..\fec\itppUtility.h" />
     <ClInclude Include="..\fec\ldpcFactory.h" />
     <ClInclude Include="..\fec\ldpc_bp_decode.h" />
     <ClInclude Include="..\fec\modulatorDefinition.h" />
-    <ClInclude Include="..\fec\modulatorFactory.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\fec\ldpc_bp_decode.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\fec\ldpc_bp_decode.cuh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\fec\ldpc_bp_decode_kernel.cuh">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
+  </ImportGroup>
 </Project>

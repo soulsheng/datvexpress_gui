@@ -6,12 +6,12 @@
 // Update working parameters for the next frame
 // This prevents parameters changing during a frame
 //
-void DVB2::base_end_of_frame_actions(void)
+void DVB2::base_end_of_frame_actions( DVB2FrameFormat *f )
 {
     if( m_params_changed )
     {
         m_format[0] = m_format[1];
-        ldpc_lookup_generate();
+        m_ldpc.ldpc_lookup_generate( f );
         m_params_changed = 0;
     }
     // reset the pointer
@@ -193,7 +193,7 @@ int DVB2::set_configure( DVB2FrameFormat *f )
         m_dnp   = 0;// No deleted null packets
         // Signal we need to update on the next frame.
         if( m_params_changed )
-            base_end_of_frame_actions();
+            base_end_of_frame_actions( f );
         else
             m_params_changed = 1;
     }
@@ -226,9 +226,9 @@ int DVB2::add_ts_frame_base( u8 *ts )
         // BCH encode the BB Frame
         bch_encode();
         // LDPC encode the BB frame and BCHFEC bits
-        ldpc_encode();
+        m_ldpc.ldpc_encode( m_frame );
         // Signal to the modulation specific class we have something to send
-        base_end_of_frame_actions();
+        base_end_of_frame_actions( m_format );
         return 1;
     }
     return 0;

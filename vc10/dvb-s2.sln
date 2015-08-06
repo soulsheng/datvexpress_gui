@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bch", "bch.vcxproj", "{9F41
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver-softBit", "driver-softBit.vcxproj", "{BAA0C4E1-C07F-484B-8AA6-347C6A587811}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ldpc", "ldpc.vcxproj", "{EC30811B-EF15-4E1A-99D3-2F2259F773D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -73,6 +75,12 @@ Global
 		{BAA0C4E1-C07F-484B-8AA6-347C6A587811}.Release|Win32.ActiveCfg = Release|Win32
 		{BAA0C4E1-C07F-484B-8AA6-347C6A587811}.Release|Win32.Build.0 = Release|Win32
 		{BAA0C4E1-C07F-484B-8AA6-347C6A587811}.Release|x64.ActiveCfg = Release|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Debug|Win32.Build.0 = Debug|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Debug|x64.ActiveCfg = Debug|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Release|Win32.ActiveCfg = Release|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Release|Win32.Build.0 = Release|Win32
+		{EC30811B-EF15-4E1A-99D3-2F2259F773D5}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

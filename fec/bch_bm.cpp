@@ -469,6 +469,8 @@ BCH_BM::BCH_BM()
 	m_nMultiMax = 10;
 
 	reg = (int*)calloc(MAXR,sizeof(int));
+
+	el = NULL;
 }
 
 BCH_BM::~BCH_BM()

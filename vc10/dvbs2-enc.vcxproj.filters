@@ -74,9 +74,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Sources\dvb_types.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\fec\ldpc_bp_decode.h">
       <Filter>fec</Filter>
     </ClInclude>
@@ -102,6 +99,12 @@
     <ClInclude Include="..\DVB-S2\DVB2.h" />
     <ClInclude Include="..\fec\itppUtility.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DVB-S2\dvb2_ldpc_encode.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DVB-S2\dvb_types.h">
+      <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 #include "memory.h"
-#include "DVB2.h"
+#include "dvb2_ldpc_encode.h"
 
 /*
 for( int row = 0; row < rows; row++ ) 
@@ -77,8 +77,10 @@ void DVBS2::ldpc_lookup_generate( void )
 	m_ldpc_encode.length = index;
 }
 */
-void DVB2::ldpc_lookup_generate( void )
+void Ldpc_encode::ldpc_lookup_generate(  DVB2FrameFormat *pFormat  )
 {
+	m_format = pFormat;
+
     int im;
     int index;
     int pbits;
@@ -119,7 +121,7 @@ void DVB2::ldpc_lookup_generate( void )
     m_ldpc_encode.table_length = index;
 }
 
-void DVB2::ldpc_encode( void )
+void Ldpc_encode::ldpc_encode(  Bit *m_frame  )
 {
     Bit *d,*p;
     // Calculate the number of parity bits
@@ -139,19 +141,4 @@ void DVB2::ldpc_encode( void )
         p[i] ^= p[i-1];
     }
 }
-void DVB2::ldpc_encode_test( void )
-{
-    if(1)// m_format.code_rate == CR_1_2 )
-    {
-        printf("\n\nEncode length %d\n",m_ldpc_encode.table_length);
-        printf("Parity start  %d\n",m_format[0].kldpc);
-        for( int i = 0; i < m_ldpc_encode.table_length; i++ )
-        {
-            if(m_ldpc_encode.d[i] == 0 )
-            {
-                printf("%d+%d\n",m_ldpc_encode.p[i],m_ldpc_encode.d[i]);
-            }
-        }
-        printf("Encode test end\n\n");
-    }
-}
+
