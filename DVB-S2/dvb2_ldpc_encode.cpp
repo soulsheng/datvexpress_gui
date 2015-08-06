@@ -26,8 +26,8 @@ for( int row = 0; row < ROWS; row++ ) \
 	{ \
 		for( int col = 1; col <= TABLE_NAME[row][0]; col++ ) \
 		{ \
-                        m_ldpc_encode.p[index] =  (TABLE_NAME[row][col] + (n*q))%pbits; \
-			m_ldpc_encode.d[index] = im; \
+                        m_ldpc_table.p[index] =  (TABLE_NAME[row][col] + (n*q))%pbits; \
+			m_ldpc_table.d[index] = im; \
 			index++; \
 		} \
 		im++; \
@@ -80,6 +80,7 @@ void DVBS2::ldpc_lookup_generate( void )
 void Ldpc_encode::ldpc_lookup_generate(  DVB2FrameFormat *pFormat  )
 {
 	m_format = pFormat;
+	Ldpc_encode_table& m_ldpc_table = *m_table;
 
     int im;
     int index;
@@ -118,11 +119,13 @@ void Ldpc_encode::ldpc_lookup_generate(  DVB2FrameFormat *pFormat  )
         if( m_format[0].code_rate == CR_5_6 ) LDPC_BF( ldpc_tab_5_6S, 37 );
         if( m_format[0].code_rate == CR_8_9 ) LDPC_BF( ldpc_tab_8_9S, 40 );
     }
-    m_ldpc_encode.table_length = index;
+    m_ldpc_table.table_length = index;
 }
 
 void Ldpc_encode::ldpc_encode(  Bit *m_frame  )
 {
+	Ldpc_encode_table& m_ldpc_table = *m_table;
+
     Bit *d,*p;
     // Calculate the number of parity bits
     int plen = m_format[0].nldpc - m_format[0].kldpc;
@@ -132,13 +135,23 @@ void Ldpc_encode::ldpc_encode(  Bit *m_frame  )
     memset( p, 0, sizeof(Bit)*plen);
 
     // now do the parity checking
-    for( int i = 0; i < m_ldpc_encode.table_length; i++ )
+    for( int i = 0; i < m_ldpc_table.table_length; i++ )
     {
-        p[m_ldpc_encode.p[i]] ^= d[m_ldpc_encode.d[i]];
+        p[m_ldpc_table.p[i]] ^= d[m_ldpc_table.d[i]];
     }
     for( int i = 1; i < plen; i++ )
     {
         p[i] ^= p[i-1];
     }
+}
+
+Ldpc_encode::Ldpc_encode()
+{
+	m_table = new Ldpc_encode_table;
+}
+
+Ldpc_encode::~Ldpc_encode()
+{
+	delete m_table;
 }
 

@@ -63,10 +63,13 @@ protected:
     const static int ldpc_tab_5_6S[37][14];
     const static int ldpc_tab_8_9S[40][5];
 
-	Ldpc_encode_table m_ldpc_encode;
+	Ldpc_encode_table* m_table;
 
 	DVB2FrameFormat *m_format;
 
+public:
+	Ldpc_encode();
+	~Ldpc_encode();
 };
 
 #endif
