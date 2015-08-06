@@ -106,5 +106,8 @@
     <ClInclude Include="..\DVB-S2\dvb_types.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\DVB-S2\dvbs2_interleave.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -108,6 +108,7 @@
     <ClInclude Include="..\DVB-S2\DVB2.h" />
     <ClInclude Include="..\DVB-S2\dvb2_ldpc_encode.h" />
     <ClInclude Include="..\DVB-S2\DVBS2.h" />
+    <ClInclude Include="..\DVB-S2\dvbs2_interleave.h" />
     <ClInclude Include="..\DVB-S2\dvb_types.h" />
     <ClInclude Include="..\fec\bch_bm.h" />
     <ClInclude Include="..\fec\dvbUtility.h" />

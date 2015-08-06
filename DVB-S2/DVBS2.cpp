@@ -118,6 +118,7 @@ int DVBS2::s2_set_configure( DVB2FrameFormat *f )
 			 modulator_configuration();
              calc_efficiency();
              m_s2_config_updated = 1;
+			 m_interleave.initialize( f );
              return 0;
         }
     }
@@ -141,9 +142,9 @@ int DVBS2::s2_add_ts_frame( u8 *ts )
     {
         // Interleave and pack
 		if( m_bInterleave )
-			s2_interleave();
+			m_interleave.s2_interleave( m_iframe, m_frame, m_payload_symbols );
 		else
-			s2_b2i();
+			m_interleave.s2_b2i( m_iframe, m_frame, m_payload_symbols );
         // create the header
         s2_pl_header_create();
         // Add the data
