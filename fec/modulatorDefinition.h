@@ -79,3 +79,5 @@ enum Rolloff_Factor
 
 #define		CODE_RATE_DEFAULT	CR_1_2
 #define		FRAME_TYPE_DEFAULT	FRAME_SHORT
+
+#define		FRAME_CACHE_SIZE	10

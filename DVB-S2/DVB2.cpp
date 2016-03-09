@@ -266,6 +266,10 @@ DVB2::DVB2(void)
     m_dnp   = 0;// No delted null packets
     m_frame_offset_bits = 0;
     m_params_changed = 1;
+
+	m_nMulti = FRAME_CACHE_SIZE;
+	m_frameMulti = new Bit[ m_nMulti * FRAME_SIZE_NORMAL];
+	m_frame = m_frameMulti;
 }
 DVB2::~DVB2(void)
 {

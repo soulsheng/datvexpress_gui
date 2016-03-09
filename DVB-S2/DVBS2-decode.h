@@ -15,7 +15,6 @@
 #define PACKET_SIZE		188
 
 #define		EBNO			2.6//10 2-2.2	3-5.6	4-8.9	5-12.4
-#define		FRAME_CACHE_SIZE	10
 
 class DVBS2_DECODE : public DVBS2
 {
@@ -88,7 +87,6 @@ private:
 	u8		m_typeLast, m_modcodLast;
 	bool	m_bNeedUpdateCode;
 
-	int		m_nMulti;
 };
 
 #endif
